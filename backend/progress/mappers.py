@@ -4,18 +4,20 @@
 class ProgressMapper:
 
     @staticmethod
-    def to_summary_dto(user, progress_qs):
+    def to_summary_dto(user, progress_qs, due_count):
         total_correct = sum(p.correct_count for p in progress_qs)
         total_incorrect = sum(p.incorrect_count for p in progress_qs)
         total_attempts = total_correct + total_incorrect
         overall_accuracy = (total_correct / total_attempts * 100) if total_attempts > 0 else 0
 
         return {
+            'due_reviews': due_count,
+            'new_items': 15,
             'total_words_learned': progress_qs.filter(content_type='vocabulary').exclude(status='new').count(),
             'total_kana_mastered': progress_qs.filter(content_type='kana', status='mastered').count(),
             'total_kanji_learned': progress_qs.filter(content_type='kanji').exclude(status='new').count(),
             'total_grammar_learned': progress_qs.filter(content_type='grammar').exclude(status='new').count(),
-            'overall_accuracy': round(overall_accuracy, 1),
+            'accuracy': round(overall_accuracy, 1),
             'total_xp': user.profile.total_xp,
             'current_level': user.profile.current_level,
         }

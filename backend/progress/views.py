@@ -15,7 +15,8 @@ class ProgressSummaryView(APIView):
 
     def get(self, request):
         progress_qs = ProgressService.get_summary(request.user)
-        data = ProgressMapper.to_summary_dto(request.user, progress_qs)
+        due_count = ProgressService.get_due_reviews(request.user).count()
+        data = ProgressMapper.to_summary_dto(request.user, progress_qs, due_count)
         return ApiResponse.success(data)
 
 

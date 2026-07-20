@@ -8,28 +8,30 @@ import { Flame, Brain, BookA, BookOpen, Target, Play } from 'lucide-react';
 import Link from 'next/link';
 import { useAuthStore } from '@/store/useAuthStore';
 
-// Mock data fetchers for now since we don't have the full API ready
 const fetchProgressSummary = async () => {
-  // Try to fetch if endpoint exists, otherwise fallback
   try {
     const { data } = await api.get('/progress/summary/');
-    return data;
+    return data.data;
   } catch (e) {
-    return {
-      due_reviews: 42,
-      new_items: 15,
-      accuracy: 87,
-      total_xp: 2450
-    };
+    return { due_reviews: 0, new_items: 0, accuracy: 0, total_xp: 0 };
   }
 };
 
 const fetchStreak = async () => {
   try {
     const { data } = await api.get('/streaks/current/');
-    return data;
+    return data.data;
   } catch (e) {
-    return { current_streak: 12, longest_streak: 21 };
+    return { current_streak: 0, longest_streak: 0 };
+  }
+};
+
+const fetchN5Progress = async () => {
+  try {
+    const { data } = await api.get('/progress/n5/');
+    return data.data;
+  } catch (e) {
+    return { percentage: 0 };
   }
 };
 
@@ -44,6 +46,11 @@ export default function DashboardPage() {
   const { data: streak } = useQuery({
     queryKey: ['streak-summary'],
     queryFn: fetchStreak,
+  });
+
+  const { data: n5Progress } = useQuery({
+    queryKey: ['progress-n5'],
+    queryFn: fetchN5Progress,
   });
 
   return (
@@ -126,30 +133,30 @@ export default function DashboardPage() {
             <div>
               <div className="flex justify-between mb-2">
                 <span className="font-medium">Vocabulary</span>
-                <span className="text-muted-foreground">45%</span>
+                <span className="text-muted-foreground">{n5Progress?.percentage || 0}%</span>
               </div>
               <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
-                <div className="h-full bg-primary rounded-full transition-all duration-1000 ease-out" style={{ width: '45%' }} />
+                <div className="h-full bg-primary rounded-full transition-all duration-1000 ease-out" style={{ width: `${n5Progress?.percentage || 0}%` }} />
               </div>
             </div>
             
             <div>
               <div className="flex justify-between mb-2">
                 <span className="font-medium">Kanji</span>
-                <span className="text-muted-foreground">22%</span>
+                <span className="text-muted-foreground">0%</span>
               </div>
               <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
-                <div className="h-full bg-accent rounded-full transition-all duration-1000 ease-out" style={{ width: '22%' }} />
+                <div className="h-full bg-accent rounded-full transition-all duration-1000 ease-out" style={{ width: '0%' }} />
               </div>
             </div>
             
             <div>
               <div className="flex justify-between mb-2">
                 <span className="font-medium">Grammar</span>
-                <span className="text-muted-foreground">60%</span>
+                <span className="text-muted-foreground">0%</span>
               </div>
               <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
-                <div className="h-full bg-blue-500 rounded-full transition-all duration-1000 ease-out" style={{ width: '60%' }} />
+                <div className="h-full bg-blue-500 rounded-full transition-all duration-1000 ease-out" style={{ width: '0%' }} />
               </div>
             </div>
           </div>

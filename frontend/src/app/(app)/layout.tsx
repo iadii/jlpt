@@ -9,20 +9,22 @@ import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, logout } = useAuthStore();
+  const { isAuthenticated, logout, _hasHydrated } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    if (!isAuthenticated) {
+    if (_hasHydrated && !isAuthenticated) {
       router.push('/login');
     }
-  }, [isAuthenticated, router]);
+  }, [_hasHydrated, isAuthenticated, router]);
 
-  if (!mounted || !isAuthenticated) {
-    return null; // Or a loading spinner
+  if (!_hasHydrated || !isAuthenticated) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+      </div>
+    );
   }
 
   const navItems = [
