@@ -1,0 +1,852 @@
+%%=============================================================================
+%% JLPT Sensei — Enterprise System Design (Mermaid Diagrams)
+%% Japanese Learning Application
+%% =============================================================================
+%%
+%% This file contains 11 comprehensive diagrams covering the full enterprise
+%% architecture. Render each diagram section independently in any Mermaid-
+%% compatible viewer (GitHub, VS Code Mermaid extension, mermaid.live).
+%%
+%% Table of Contents:
+%%   1. High-Level System Architecture (C4 Context)
+%%   2. Backend Component Diagram
+%%   3. Entity-Relationship Diagram (Current + Proposed)
+%%   4. ML/NLP Pipeline Architecture
+%%   5. Sequence: Authentication Flow
+%%   6. Sequence: Adaptive Quiz Flow with ML
+%%   7. Sequence: SRS Smart Review Flow
+%%   8. Sequence: AI Conversation Tutor
+%%   9. State Diagram: SRS Learning States
+%%  10. State Diagram: User Learning Journey
+%%  11. Deployment Diagram (Docker Compose)
+%%
+%% NOTE: Each section is a standalone Mermaid diagram. Copy individual sections
+%%       between the --- markers to render them separately.
+%%=============================================================================
+
+
+%%=============================================================================
+%% 1. HIGH-LEVEL SYSTEM ARCHITECTURE (C4 Context Diagram)
+%%=============================================================================
+%% Shows the system boundary, external actors, and primary subsystems.
+
+graph TB
+    subgraph Clients["🖥️ CLIENT TIER"]
+        WebApp["Next.js 16<br/>React 19 + Tailwind v4<br/>SSR / CSR / PWA"]
+        MobileApp["React Native<br/>(Future)"]
+    end
+
+    subgraph Edge["🌐 EDGE / GATEWAY TIER"]
+        CDN["CloudFlare CDN<br/>Static Assets + Audio"]
+        Nginx["Nginx<br/>Reverse Proxy<br/>SSL · Rate Limit · gzip"]
+    end
+
+    subgraph API["⚙️ API TIER"]
+        Django["Django 6.0 + DRF 3.17<br/>8 Domain Apps<br/>JWT Auth · Channels"]
+        WS["WebSocket Server<br/>Django Channels<br/>Live Quiz · Notifications"]
+    end
+
+    subgraph ML["🧠 ML / NLP TIER"]
+        FastAPI["FastAPI ML Service<br/>Smart SRS · Adaptive Quiz<br/>Grammar Check · Chat"]
+        Models["ML Models<br/>HLR · IRT · BERT<br/>Whisper · Gemini API"]
+    end
+
+    subgraph Async["⚡ ASYNC TIER"]
+        Celery["Celery Workers<br/>SRS Recalc · Analytics<br/>Email · ML Batching"]
+        Beat["Celery Beat<br/>Scheduled Tasks<br/>Daily SRS · Cleanup"]
+    end
+
+    subgraph Data["💾 DATA TIER"]
+        PG[("PostgreSQL<br/>Primary OLTP<br/>Models + SRS")]
+        Redis[("Redis<br/>Cache · Sessions<br/>Celery Broker · Leaderboard")]
+        ES[("Elasticsearch<br/>Japanese Full-Text<br/>Kanji · Vocab · Grammar")]
+        S3["S3 / MinIO<br/>Audio · Stroke Images<br/>User Uploads"]
+    end
+
+    subgraph Monitoring["📊 OBSERVABILITY"]
+        Sentry["Sentry<br/>Error Tracking"]
+        Grafana["Prometheus + Grafana<br/>Metrics · Dashboards"]
+        Logs["Structured Logging<br/>structlog → ELK/Loki"]
+    end
+
+    WebApp -->|HTTPS| CDN
+    MobileApp -->|HTTPS| CDN
+    CDN --> Nginx
+    Nginx -->|HTTP| Django
+    Nginx -->|WSS| WS
+    Django -->|REST / gRPC| FastAPI
+    FastAPI --> Models
+    Django --> PG
+    Django --> Redis
+    Django --> ES
+    Django --> S3
+    Django --> Celery
+    Celery --> Redis
+    Celery --> PG
+    Beat --> Celery
+    FastAPI --> PG
+    FastAPI --> Redis
+    Django --> Sentry
+    Django --> Grafana
+    Django --> Logs
+
+
+%%=============================================================================
+%% 2. BACKEND COMPONENT DIAGRAM
+%%=============================================================================
+%% Detailed view of Django apps, their service layers, and interconnections.
+
+graph LR
+    subgraph Shared["🔧 Shared Infrastructure"]
+        ApiResp["ApiResponse<br/>Envelope"]
+        Pagination["CursorPagination<br/>Standard · Session · Small"]
+        Exceptions["Exception Hierarchy<br/>Service · NotFound<br/>Auth · InsufficientData"]
+        SeedCmd["seed_data<br/>Management Command"]
+    end
+
+    subgraph Auth["🔐 Accounts App"]
+        AuthView["RegisterView<br/>LoginView<br/>LogoutView<br/>ProfileView"]
+        AuthService["AuthService<br/>ProfileService"]
+        AuthMapper["UserMapper"]
+        UserProfile["UserProfile Model<br/>level · xp · goals"]
+    end
+
+    subgraph Content["📚 Content Domain"]
+        subgraph KanaApp["Kana App"]
+            KanaView["Hiragana/Katakana<br/>ListView · GroupView<br/>DetailView"]
+            KanaService["KanaService"]
+            KanaModel["Kana Model<br/>character · romaji<br/>group · stroke · audio"]
+        end
+
+        subgraph VocabApp["Vocabulary App"]
+            VocabView["LevelViews N1-N5<br/>DetailView<br/>CategoryView"]
+            VocabService["VocabularyService"]
+            VocabModel["Vocabulary Model<br/>kanji · kana · meaning<br/>part_of_speech · category"]
+        end
+
+        subgraph KanjiApp["Kanji App"]
+            KanjiView["LevelViews N1-N5<br/>DetailView"]
+            KanjiService["KanjiService"]
+            KanjiModel["Kanji Model<br/>character · onyomi<br/>kunyomi · strokes"]
+        end
+
+        subgraph GrammarApp["Grammar App"]
+            GrammarView["LevelViews N1-N5<br/>DetailView"]
+            GrammarService["GrammarService"]
+            GrammarModel["GrammarPoint Model<br/>title · structure<br/>explanation · examples"]
+        end
+    end
+
+    subgraph Learning["🎯 Learning Domain"]
+        subgraph QuizApp["Quiz App"]
+            QuizView["VocabQuiz · KanaQuiz<br/>KanjiQuiz · Submit<br/>History"]
+            QuizService["QuizService<br/>Generate MCQs<br/>Score · Award XP"]
+        end
+
+        subgraph ProgressApp["Progress App"]
+            ProgressView["Summary · DueReviews<br/>LevelProgress<br/>RecordProgress"]
+            ProgressService["ProgressService<br/>SRS Algorithm<br/>SM-2 + ML"]
+            ProgressModel["UserProgress Model<br/>ease_factor · interval<br/>next_review_date"]
+        end
+
+        subgraph SessionsApp["Sessions App"]
+            SessionView["Start · Complete<br/>History"]
+            SessionService["SessionService"]
+            SessionModel["StudySession Model<br/>type · time · accuracy · xp"]
+        end
+    end
+
+    subgraph Gamification["🏆 Gamification Domain"]
+        subgraph StreaksApp["Streaks App"]
+            StreakView["CurrentStreak<br/>CheckIn<br/>Leaderboard"]
+            StreakService["StreakService<br/>LeaderboardService"]
+            StreakModel["UserStreak Model<br/>current · longest<br/>last_study_date"]
+        end
+    end
+
+    subgraph NewML["🧠 ML App (NEW)"]
+        MLView["GrammarCheck<br/>Pronunciation<br/>ChatTutor<br/>Recommendations"]
+        MLService["MLService<br/>Proxy to FastAPI"]
+        MLModel["MLPrediction<br/>ConversationMessage"]
+    end
+
+    subgraph NewAnalytics["📊 Analytics App (NEW)"]
+        AnalyticsService["EventTracker<br/>Aggregations"]
+        InteractionModel["UserInteraction<br/>event_type · metadata"]
+    end
+
+    subgraph NewSearch["🔍 Search App (NEW)"]
+        SearchView["Unified Search<br/>Kanji · Vocab · Grammar"]
+        SearchService["ElasticsearchService"]
+    end
+
+    %% Data flow
+    AuthView --> AuthService --> UserProfile
+    KanaView --> KanaService --> KanaModel
+    VocabView --> VocabService --> VocabModel
+    KanjiView --> KanjiService --> KanjiModel
+    GrammarView --> GrammarService --> GrammarModel
+    QuizView --> QuizService
+    ProgressView --> ProgressService --> ProgressModel
+    SessionView --> SessionService --> SessionModel
+    StreakView --> StreakService --> StreakModel
+    MLView --> MLService --> MLModel
+    SearchView --> SearchService
+
+    %% Cross-domain
+    QuizService --> VocabModel
+    QuizService --> KanaModel
+    QuizService --> KanjiModel
+    KanjiModel -.->|M2M| VocabModel
+    QuizService --> ProgressService
+    ProgressService -.->|ML Enhanced| MLService
+
+
+%%=============================================================================
+%% 3. ENTITY-RELATIONSHIP DIAGRAM
+%%=============================================================================
+%% Complete data model: existing models + proposed ML/analytics models.
+
+erDiagram
+    User ||--o| UserProfile : has
+    User ||--o| UserStreak : has
+    User ||--o{ UserProgress : tracks
+    User ||--o{ StudySession : records
+    User ||--o{ UserInteraction : generates
+    User ||--o{ MLPrediction : receives
+    User ||--o{ ConversationMessage : sends
+
+    Vocabulary ||--o{ Kanji : "example_words (M2M)"
+
+    User {
+        int id PK
+        string username
+        string email
+        string password
+        datetime date_joined
+        boolean is_active
+    }
+
+    UserProfile {
+        int id PK
+        int user_id FK
+        enum current_level "N5 N4 N3 N2 N1"
+        int daily_goal_minutes
+        int total_xp
+        string preferred_language
+        datetime created_at
+        datetime updated_at
+    }
+
+    Kana {
+        int id PK
+        string character "e.g. か"
+        string romaji "e.g. ka"
+        enum kana_type "hiragana katakana"
+        string group "e.g. ka-row"
+        string stroke_order_image
+        string audio_url
+        int order
+    }
+
+    Vocabulary {
+        int id PK
+        string kanji "nullable e.g. 食べる"
+        string kana "e.g. たべる"
+        string romaji "e.g. taberu"
+        string meaning
+        enum jlpt_level "N5 N4 N3 N2 N1"
+        string part_of_speech
+        string category
+        text example_sentence_jp
+        text example_sentence_en
+        string audio_url
+        int difficulty_order
+    }
+
+    Kanji {
+        int id PK
+        string character "e.g. 食"
+        string onyomi "e.g. ショク"
+        string kunyomi "e.g. た.べる"
+        string meaning
+        int stroke_count
+        enum jlpt_level "N5 N4 N3 N2 N1"
+        string stroke_order_image
+        int difficulty_order
+    }
+
+    GrammarPoint {
+        int id PK
+        string title
+        text explanation
+        string structure
+        enum jlpt_level "N5 N4 N3 N2 N1"
+        json example_sentences
+        int difficulty_order
+        datetime created_at
+    }
+
+    UserProgress {
+        int id PK
+        int user_id FK
+        string content_type "vocabulary kana kanji grammar"
+        int content_id
+        enum status "new learning reviewing mastered"
+        int correct_count
+        int incorrect_count
+        float ease_factor "SRS default 2.5"
+        int interval_days
+        date next_review_date
+        datetime last_reviewed_at
+        datetime created_at
+    }
+
+    StudySession {
+        int id PK
+        int user_id FK
+        string session_type "vocabulary kana kanji grammar quiz"
+        string jlpt_level
+        datetime start_time
+        datetime end_time
+        int words_reviewed
+        float accuracy_percentage
+        int xp_earned
+    }
+
+    UserStreak {
+        int id PK
+        int user_id FK
+        int current_streak
+        int longest_streak
+        date last_study_date
+    }
+
+    MLPrediction {
+        int id PK
+        int user_id FK
+        string content_type
+        int content_id
+        float predicted_recall
+        datetime predicted_at
+        string model_version
+    }
+
+    UserInteraction {
+        int id PK
+        int user_id FK
+        string event_type
+        string content_type
+        int content_id
+        int response_time_ms
+        json metadata
+        datetime created_at
+    }
+
+    ConversationMessage {
+        int id PK
+        int user_id FK
+        uuid session_id
+        enum role "user assistant system"
+        text content
+        datetime created_at
+    }
+
+
+%%=============================================================================
+%% 4. ML / NLP PIPELINE ARCHITECTURE
+%%=============================================================================
+%% Shows the ML microservice internals and data flow.
+
+graph TB
+    subgraph DjangoAPI["Django API (Orchestrator)"]
+        QuizSvc["Quiz Service"]
+        ProgressSvc["Progress Service"]
+        MLProxy["ML Service Proxy"]
+        ChatEndpoint["Chat Endpoint"]
+    end
+
+    subgraph MLMicroservice["FastAPI ML Microservice"]
+        Router["API Router"]
+
+        subgraph SmartSRS["📈 Smart SRS Engine"]
+            FeatureEng["Feature Engineering<br/>time_since_review<br/>response_time_ms<br/>session_fatigue<br/>content_difficulty"]
+            HLR["Half-Life Regression<br/>P(recall) = 2^(-t/h)<br/>h = f(features)"]
+            Scheduler["Review Scheduler<br/>Optimal next_review_date"]
+        end
+
+        subgraph AdaptiveQuiz["🎯 Adaptive Quiz Engine"]
+            IRT["Item Response Theory<br/>θ estimation (ability)<br/>b estimation (difficulty)"]
+            Thompson["Thompson Sampling<br/>Explore vs Exploit<br/>Weak area detection"]
+            QuestionSelect["Question Selector<br/>Zone of Proximal Dev"]
+        end
+
+        subgraph GrammarNLP["📝 Grammar Checker"]
+            Tokenizer["MeCab / fugashi<br/>Japanese Tokenizer"]
+            BERT["tohoku-nlp/bert-base-japanese<br/>or Gemini API"]
+            ErrorDetect["Error Detector<br/>Pattern matching<br/>Copula errors<br/>Particle misuse"]
+            CorrectionGen["Correction Generator<br/>Linked Grammar Points"]
+        end
+
+        subgraph SpeechASR["🎤 Speech Recognition"]
+            AudioPreprocess["Audio Preprocessor<br/>WAV normalization"]
+            STT["Whisper / Cloud STT<br/>Japanese ASR"]
+            PronScore["Pronunciation Scorer<br/>Kana-level comparison<br/>Edit distance"]
+        end
+
+        subgraph ChatAI["💬 AI Tutor"]
+            ContextBuilder["Context Builder<br/>User level · History<br/>Current lesson"]
+            LLM["Gemini 2.0 Flash<br/>or GPT-4o-mini"]
+            ResponseFilter["Response Filter<br/>JLPT level compliance<br/>Furigana injection"]
+        end
+
+        subgraph ContentRec["📊 Recommender"]
+            UserEmbed["User Embeddings<br/>Learning patterns"]
+            CollabFilter["Collaborative Filtering<br/>SVD / ALS"]
+            ContentRanker["Content Ranker<br/>Personalized ordering"]
+        end
+    end
+
+    subgraph DataStores["Data Sources"]
+        PG2[("PostgreSQL<br/>UserProgress<br/>Interactions")]
+        Redis2[("Redis<br/>Feature Cache<br/>Model Cache")]
+        ModelStore["Model Registry<br/>Versioned models<br/>A/B test configs"]
+    end
+
+    %% Connections
+    QuizSvc -->|get_adaptive_questions| Router
+    ProgressSvc -->|predict_recall| Router
+    MLProxy -->|check_grammar| Router
+    MLProxy -->|score_pronunciation| Router
+    ChatEndpoint -->|chat_completion| Router
+
+    Router --> SmartSRS
+    Router --> AdaptiveQuiz
+    Router --> GrammarNLP
+    Router --> SpeechASR
+    Router --> ChatAI
+    Router --> ContentRec
+
+    FeatureEng --> HLR --> Scheduler
+    IRT --> Thompson --> QuestionSelect
+    Tokenizer --> BERT --> ErrorDetect --> CorrectionGen
+    AudioPreprocess --> STT --> PronScore
+    ContextBuilder --> LLM --> ResponseFilter
+    UserEmbed --> CollabFilter --> ContentRanker
+
+    SmartSRS --> PG2
+    SmartSRS --> Redis2
+    AdaptiveQuiz --> PG2
+    GrammarNLP --> ModelStore
+    SpeechASR --> ModelStore
+    ChatAI --> PG2
+    ContentRec --> PG2
+
+
+%%=============================================================================
+%% 5. SEQUENCE DIAGRAM: AUTHENTICATION FLOW
+%%=============================================================================
+
+sequenceDiagram
+    autonumber
+    participant C as Client (Next.js)
+    participant N as Nginx
+    participant D as Django API
+    participant DB as PostgreSQL
+    participant R as Redis
+
+    Note over C,R: Registration Flow
+    C->>+N: POST /api/auth/register/
+    N->>+D: Forward request
+    D->>D: Validate (RegisterRequest serializer)
+    D->>DB: Check email/username uniqueness
+    DB-->>D: OK (no conflict)
+    D->>DB: User.objects.create_user()
+    DB-->>D: User created
+    D->>DB: Auto-create UserProfile (signal)
+    D->>DB: Auto-create UserStreak (signal)
+    D->>D: RefreshToken.for_user(user)
+    D-->>-N: 201 {id, email, username, tokens}
+    N-->>-C: Response
+
+    Note over C,R: Login Flow
+    C->>+N: POST /api/auth/login/
+    N->>+D: Forward request
+    D->>DB: User.objects.get(email=...)
+    DB-->>D: User object
+    D->>D: authenticate(username, password)
+    D->>D: RefreshToken.for_user(user)
+    D-->>-N: 200 {id, username, tokens}
+    N-->>-C: Response
+
+    Note over C,R: Authenticated Request
+    C->>+N: GET /api/words/n5/ (Bearer token)
+    N->>+D: Forward with JWT
+    D->>D: JWTAuthentication.authenticate()
+    D->>R: Check token blacklist
+    R-->>D: Token valid
+    D->>DB: Vocabulary.filter(jlpt_level='n5')
+    DB-->>D: QuerySet
+    D->>D: VocabularyMapper.to_list()
+    D-->>-N: 200 {status, data, pagination}
+    N-->>-C: Response
+
+    Note over C,R: Token Refresh
+    C->>+N: POST /api/auth/refresh/
+    N->>+D: {refresh: "eyJ..."}
+    D->>R: Validate + blacklist old refresh
+    D->>D: Issue new access + refresh tokens
+    D-->>-N: 200 {access, refresh}
+    N-->>-C: New tokens
+
+    Note over C,R: Logout
+    C->>+N: POST /api/auth/logout/
+    N->>+D: {refresh: "eyJ..."}
+    D->>R: Blacklist refresh token
+    D-->>-N: 200 "Logged out successfully"
+    N-->>-C: Response
+
+
+%%=============================================================================
+%% 6. SEQUENCE DIAGRAM: ADAPTIVE QUIZ FLOW WITH ML
+%%=============================================================================
+
+sequenceDiagram
+    autonumber
+    participant C as Client (Next.js)
+    participant D as Django API
+    participant ML as FastAPI ML Service
+    participant DB as PostgreSQL
+    participant R as Redis
+    participant CL as Celery Worker
+
+    Note over C,CL: Quiz Generation (ML-Enhanced)
+    C->>+D: GET /api/v2/quiz/vocabulary/n5/?count=10
+    D->>DB: Fetch user performance history
+    DB-->>D: UserProgress records
+    D->>+ML: POST /ml/adaptive-questions
+    Note right of ML: Payload: user_id, level,<br/>performance_history, count=10
+
+    ML->>ML: IRT: Estimate user ability θ
+    ML->>DB: Fetch question bank with difficulty params
+    DB-->>ML: Vocabulary items + difficulty metadata
+    ML->>ML: Thompson Sampling: select optimal mix
+    Note right of ML: 40% weak areas (exploit)<br/>40% zone of proximal dev<br/>20% exploration (new items)
+    ML->>ML: Generate distractor options
+    ML-->>-D: Ranked question list
+
+    D->>D: QuizMapper.to_quiz_response()
+    D-->>-C: 200 {quiz_type, level, questions[]}
+
+    Note over C,CL: Quiz Submission
+    C->>+D: POST /api/quiz/submit/
+    Note right of C: {quiz_type, level, answers[]}
+    D->>D: Score answers
+    D->>DB: Record each answer in UserProgress
+
+    D->>+CL: async: update_srs_with_ml(user_id, answers)
+    CL->>+ML: POST /ml/predict-recall (batch)
+    ML->>ML: Feature engineering per item
+    ML->>ML: HLR: predict P(recall) for each
+    ML->>ML: Calculate optimal next_review_date
+    ML-->>-CL: predictions[]
+    CL->>DB: Batch update UserProgress.next_review_date
+    CL->>DB: Update MLPrediction records
+    CL-->>-D: Task queued
+
+    D->>DB: Award XP to UserProfile
+    D->>DB: Update UserStreak (auto check-in)
+    D->>R: Invalidate leaderboard cache
+    D-->>-C: 200 {score, total, accuracy, xp, corrections[]}
+
+    Note over C,CL: Analytics Event (Fire-and-forget)
+    D->>CL: async: track_event(quiz_complete, metadata)
+    CL->>DB: Insert UserInteraction
+
+
+%%=============================================================================
+%% 7. SEQUENCE DIAGRAM: SRS SMART REVIEW FLOW
+%%=============================================================================
+
+sequenceDiagram
+    autonumber
+    participant Cron as Celery Beat
+    participant CL as Celery Worker
+    participant ML as FastAPI ML Service
+    participant DB as PostgreSQL
+    participant R as Redis
+    participant C as Client
+    participant D as Django API
+
+    Note over Cron,D: Daily SRS Recalculation (00:00 UTC)
+    Cron->>+CL: trigger: daily_srs_recalc
+    CL->>DB: SELECT active users (last_study_date >= 7d ago)
+    DB-->>CL: user_ids[]
+
+    loop For each active user
+        CL->>DB: Fetch UserProgress (all content types)
+        DB-->>CL: progress_records[]
+        CL->>+ML: POST /ml/batch-predict-recall
+        ML->>ML: Feature engineering (batch)
+        ML->>ML: HLR model inference
+        ML-->>-CL: predictions[] with P(recall)
+        CL->>DB: Batch update next_review_date
+        CL->>R: Cache ranked review queue<br/>Key: review_queue:{user_id}<br/>TTL: 24 hours
+    end
+    CL-->>-Cron: Done
+
+    Note over Cron,D: User Opens App
+    C->>+D: GET /api/v2/progress/smart-review/
+    D->>R: GET review_queue:{user_id}
+    alt Cache Hit
+        R-->>D: Cached review items (ranked)
+    else Cache Miss
+        D->>DB: SELECT UserProgress WHERE next_review_date <= today
+        DB-->>D: due_items[]
+        D->>+ML: POST /ml/rank-reviews
+        ML->>ML: Sort by forgetting probability (highest first)
+        ML-->>-D: ranked_items[]
+        D->>R: SET review_queue:{user_id} (TTL: 4h)
+    end
+    D-->>-C: 200 {due_count, items[]}
+
+    Note over Cron,D: User Reviews an Item
+    C->>+D: POST /api/progress/record/{word_id}/
+    Note right of C: {content_type, is_correct, response_time_ms}
+    D->>DB: Update UserProgress (correct/incorrect count)
+    D->>+ML: POST /ml/predict-next-review
+    ML->>ML: HLR with updated features
+    ML-->>-D: {next_review_date, interval_days}
+    D->>DB: Update next_review_date, interval_days
+    D->>R: Update review_queue:{user_id} (remove item)
+    D->>DB: Award XP
+    D-->>-C: 200 {new_status, next_review_date, xp_earned}
+
+
+%%=============================================================================
+%% 8. SEQUENCE DIAGRAM: AI CONVERSATION TUTOR
+%%=============================================================================
+
+sequenceDiagram
+    autonumber
+    participant C as Client (Next.js)
+    participant D as Django API
+    participant ML as FastAPI ML Service
+    participant LLM as Gemini 2.0 Flash
+    participant DB as PostgreSQL
+
+    Note over C,DB: Start Conversation
+    C->>+D: POST /api/v2/ml/chat/
+    Note right of C: {message: "こんにちは！", session_id: null}
+
+    D->>DB: Create new ConversationMessage (role: system)
+    Note right of DB: System prompt with user's JLPT level,<br/>recent vocabulary, grammar points studied
+    D->>DB: Store user message (role: user)
+
+    D->>+ML: POST /ml/chat/completion
+    ML->>DB: Fetch user context (level, weak areas, recent lessons)
+    DB-->>ML: {level: "n5", recent_vocab: [...], weak_grammar: [...]}
+    ML->>ML: Build system prompt with constraints
+    Note right of ML: "Use only N5 vocab and grammar.<br/>Include romaji. Correct errors gently."
+
+    ML->>+LLM: Chat completion request
+    Note right of LLM: messages: [system, user]
+    LLM-->>-ML: AI response (Japanese + romaji + English)
+
+    ML->>ML: Post-process: validate JLPT compliance
+    ML->>ML: Extract grammar points used
+    ML->>ML: Detect if user made errors → gentle correction
+    ML-->>-D: {response, grammar_refs[], corrections[]}
+
+    D->>DB: Store assistant message (role: assistant)
+    D-->>-C: 200 {message, session_id, grammar_refs, corrections}
+
+    Note over C,DB: Continue Conversation
+    C->>+D: POST /api/v2/ml/chat/
+    Note right of C: {message: "今日は学校に行きました", session_id: "abc-123"}
+    D->>DB: Fetch conversation history (session_id)
+    DB-->>D: previous messages[]
+    D->>DB: Store user message
+    D->>+ML: POST /ml/chat/completion (with history)
+    ML->>+LLM: Chat completion (full context)
+    LLM-->>-ML: Response
+    ML-->>-D: Processed response
+    D->>DB: Store assistant message
+    D-->>-C: 200 {message, session_id, ...}
+
+
+%%=============================================================================
+%% 9. STATE DIAGRAM: SRS LEARNING STATES
+%%=============================================================================
+%% Shows how content items transition between learning states.
+
+stateDiagram-v2
+    [*] --> New: User encounters item
+
+    New --> Learning: First review attempt
+    Learning --> Learning: Incorrect answer<br/>(reset interval)
+    Learning --> Reviewing: 3+ correct in a row<br/>(ease_factor >= 2.0)
+    Reviewing --> Reviewing: Correct answer<br/>(increase interval)
+    Reviewing --> Learning: Incorrect after gap<br/>(ease_factor drops)
+    Reviewing --> Mastered: interval >= 21 days<br/>AND accuracy >= 90%
+    Mastered --> Reviewing: Incorrect on mastered item<br/>(lapse — reduce interval)
+    Mastered --> [*]: Permanently retained
+
+    state New {
+        [*] --> Unseen
+        Unseen --> FirstExposure: Shown in lesson/quiz
+    }
+
+    state Learning {
+        [*] --> Active
+        Active --> ShortInterval: Correct (1-3 day interval)
+        ShortInterval --> Active: Review due
+    }
+
+    state Reviewing {
+        [*] --> GrowingInterval
+        GrowingInterval --> LongInterval: interval * ease_factor
+        LongInterval --> GrowingInterval: Review due
+    }
+
+    state Mastered {
+        [*] --> Retained
+        Retained --> PeriodicCheck: 30-90 day refresh
+        PeriodicCheck --> Retained: Correct
+    }
+
+
+%%=============================================================================
+%% 10. STATE DIAGRAM: USER LEARNING JOURNEY
+%%=============================================================================
+
+stateDiagram-v2
+    [*] --> Onboarding: Register
+
+    Onboarding --> N5_Beginner: Set level to N5<br/>Complete kana tutorial
+
+    state N5_Beginner {
+        [*] --> LearnHiragana
+        LearnHiragana --> LearnKatakana: All 46 mastered
+        LearnKatakana --> N5Vocab: All 46 mastered
+        N5Vocab --> N5Grammar: 200+ words learned
+        N5Grammar --> N5Kanji: Core grammar mastered
+        N5Kanji --> N5Ready: 80+ kanji mastered
+    }
+
+    N5_Beginner --> N4_Elementary: Pass N5 mock quiz >= 80%
+
+    state N4_Elementary {
+        [*] --> N4Vocab
+        N4Vocab --> N4Grammar: 300+ words
+        N4Grammar --> N4Kanji: Grammar mastered
+        N4Kanji --> N4Ready: 200+ kanji
+    }
+
+    N4_Elementary --> N3_Intermediate: Pass N4 mock >= 80%
+
+    state N3_Intermediate {
+        [*] --> N3Vocab
+        N3Vocab --> N3Grammar
+        N3Grammar --> N3Kanji
+        N3Kanji --> N3Ready
+    }
+
+    N3_Intermediate --> N2_UpperIntermediate: Pass N3 mock >= 80%
+
+    state N2_UpperIntermediate {
+        [*] --> N2Content
+        N2Content --> N2Ready
+    }
+
+    N2_UpperIntermediate --> N1_Advanced: Pass N2 mock >= 80%
+
+    state N1_Advanced {
+        [*] --> N1Content
+        N1Content --> N1Ready
+    }
+
+    N1_Advanced --> [*]: JLPT N1 Mastery 🎌
+
+
+%%=============================================================================
+%% 11. DEPLOYMENT DIAGRAM (Docker Compose Stack)
+%%=============================================================================
+
+graph TB
+    subgraph DockerNetwork["Docker Network: jlpt-net"]
+
+        subgraph FrontendContainer["📱 next-frontend"]
+            NextJS["Next.js 16<br/>Port: 3000<br/>NODE_ENV: production"]
+        end
+
+        subgraph NginxContainer["🌐 nginx"]
+            NginxSvc["Nginx 1.25<br/>Port: 80/443<br/>SSL Termination<br/>Rate Limiting<br/>Proxy Pass"]
+        end
+
+        subgraph DjangoContainer["⚙️ django"]
+            Gunicorn["Gunicorn + Uvicorn<br/>Port: 8000<br/>Workers: 4<br/>Django 6.0 + DRF"]
+        end
+
+        subgraph ChannelsContainer["🔌 channels"]
+            Daphne["Daphne ASGI<br/>Port: 8001<br/>WebSocket Server"]
+        end
+
+        subgraph CeleryContainer["⚡ celery-worker"]
+            CeleryW["Celery 5.x<br/>Concurrency: 4<br/>Queues: default, ml, srs"]
+        end
+
+        subgraph BeatContainer["⏰ celery-beat"]
+            CeleryB["Celery Beat<br/>Scheduled Tasks<br/>daily_srs_recalc<br/>weekly_analytics"]
+        end
+
+        subgraph MLContainer["🧠 ml-service"]
+            FastAPISvc["FastAPI<br/>Port: 8002<br/>Uvicorn Workers: 2<br/>GPU optional"]
+        end
+
+        subgraph PGContainer["🗄️ postgres"]
+            PostgreSQL["PostgreSQL 16<br/>Port: 5432<br/>Volume: pg_data"]
+        end
+
+        subgraph RedisContainer["📮 redis"]
+            RedisSvc["Redis 7<br/>Port: 6379<br/>Volume: redis_data<br/>maxmemory: 256mb"]
+        end
+
+        subgraph ESContainer["🔍 elasticsearch"]
+            ESSvc["Elasticsearch 8<br/>Port: 9200<br/>kuromoji plugin<br/>Volume: es_data"]
+        end
+
+        subgraph MinIOContainer["📦 minio"]
+            MinIOSvc["MinIO<br/>Port: 9000/9001<br/>S3-compatible<br/>Volume: minio_data"]
+        end
+    end
+
+    subgraph Volumes["Persistent Volumes"]
+        V1["pg_data"]
+        V2["redis_data"]
+        V3["es_data"]
+        V4["minio_data"]
+        V5["media_files"]
+    end
+
+    NginxSvc -->|:3000| NextJS
+    NginxSvc -->|:8000| Gunicorn
+    NginxSvc -->|:8001 WSS| Daphne
+    Gunicorn -->|REST :8002| FastAPISvc
+    Gunicorn --> PostgreSQL
+    Gunicorn --> RedisSvc
+    Gunicorn --> ESSvc
+    Gunicorn --> MinIOSvc
+    Daphne --> RedisSvc
+    CeleryW --> RedisSvc
+    CeleryW --> PostgreSQL
+    CeleryW --> FastAPISvc
+    CeleryB --> CeleryW
+    FastAPISvc --> PostgreSQL
+    FastAPISvc --> RedisSvc
+
+    PostgreSQL --- V1
+    RedisSvc --- V2
+    ESSvc --- V3
+    MinIOSvc --- V4
+    Gunicorn --- V5
