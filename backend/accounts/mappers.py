@@ -33,6 +33,7 @@ class UserMapper:
     @staticmethod
     def to_profile_dto(profile):
         return {
+            'id': profile.user.id,
             'username': profile.user.username,
             'email': profile.user.email,
             'date_joined': profile.user.date_joined,

@@ -7,16 +7,16 @@ import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Lock, Mail } from 'lucide-react';
+import { Lock, Mail, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const setTokens = useAuthStore(state => state.setTokens);
   const setUser = useAuthStore(state => state.setUser);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -25,9 +25,8 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await api.post('/auth/login/', { username: email, password }); // Backend might expect username for email
-      setTokens(response.data.tokens.access, response.data.tokens.refresh);
-      setUser({ id: response.data.id, username: response.data.username });
+      const response = await api.post('/auth/login/', { username: email, password });
+      setUser({ id: response.data.data.id, username: response.data.data.username });
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
@@ -67,13 +66,20 @@ export default function LoginPage() {
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input 
-                  type="password" 
+                  type={showPassword ? "text" : "password"} 
                   placeholder="Password" 
-                  className="pl-10 h-12 bg-background/50 border-muted-foreground/20"
+                  className="pl-10 pr-10 h-12 bg-background/50 border-muted-foreground/20"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
+                <button 
+                  type="button" 
+                  className="absolute right-3 top-3 text-muted-foreground hover:text-primary transition-colors"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
             </div>
             

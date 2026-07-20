@@ -5,13 +5,37 @@ No business logic here.
 """
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
 
 from shared.response import ApiResponse
 from shared.exceptions import ServiceException, AuthenticationException
 
-from .requests import RegisterRequest, LoginRequest, ProfileUpdateRequest, LogoutRequest
+from .requests import RegisterRequest, LoginRequest, ProfileUpdateRequest
 from .services import AuthService, ProfileService
 from .mappers import UserMapper
+
+
+def _set_auth_cookies(response, tokens):
+    access_token = str(tokens.access_token)
+    refresh_token = str(tokens)
+    
+    response.set_cookie(
+        key='access_token',
+        value=access_token,
+        httponly=True,
+        secure=False,  # Set True in prod
+        samesite='Lax',
+        max_age=30 * 60
+    )
+    response.set_cookie(
+        key='refresh_token',
+        value=refresh_token,
+        httponly=True,
+        secure=False,  # Set True in prod
+        samesite='Lax',
+        max_age=7 * 24 * 60 * 60
+    )
 
 
 class RegisterView(APIView):
@@ -24,8 +48,11 @@ class RegisterView(APIView):
         try:
             user, tokens = AuthService.register(**req.validated_data)
         except ServiceException as e:
-            return ApiResponse.error(message=e.message, status=e.status_code)
-        data = UserMapper.to_register_response(user, tokens)
+            return ApiResponse.error(message=e.message, status_code=e.status_code)
+        
+        # Don't send tokens in JSON body anymore, just user data
+        data = UserMapper.to_profile_dto(user.profile) 
+        
         return ApiResponse.created(data, message="Registration successful")
 
 
@@ -40,22 +67,56 @@ class LoginView(APIView):
             user, tokens = AuthService.login(**req.validated_data)
         except AuthenticationException as e:
             return ApiResponse.unauthorized(message=e.message)
-        data = UserMapper.to_login_response(user, tokens)
-        return ApiResponse.success(data, message="Login successful")
+            
+        data = UserMapper.to_profile_dto(user.profile)
+        response = ApiResponse.success(data, message="Login successful")
+        _set_auth_cookies(response, tokens)
+        return response
+
+
+class CookieTokenRefreshView(APIView):
+    """POST /api/auth/refresh/"""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        refresh = request.COOKIES.get('refresh_token')
+        if not refresh:
+            return ApiResponse.unauthorized(message="No refresh token provided")
+            
+        try:
+            token = RefreshToken(refresh)
+            access = str(token.access_token)
+        except TokenError:
+            return ApiResponse.unauthorized(message="Token is invalid or expired")
+            
+        response = ApiResponse.success(message="Token refreshed")
+        response.set_cookie(
+            key='access_token',
+            value=access,
+            httponly=True,
+            secure=False,
+            samesite='Lax',
+            max_age=30 * 60
+        )
+        return response
 
 
 class LogoutView(APIView):
     """POST /api/auth/logout/"""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny] # Change to AllowAny so we can clear cookies even if token expired
 
     def post(self, request):
-        req = LogoutRequest(data=request.data)
-        req.is_valid(raise_exception=True)
-        try:
-            AuthService.logout(req.validated_data['refresh'])
-        except ServiceException as e:
-            return ApiResponse.error(message=e.message)
-        return ApiResponse.success(message="Logged out successfully")
+        refresh = request.COOKIES.get('refresh_token')
+        if refresh:
+            try:
+                AuthService.logout(refresh)
+            except ServiceException:
+                pass # Ignore if already invalid
+                
+        response = ApiResponse.success(message="Logged out successfully")
+        response.delete_cookie('access_token')
+        response.delete_cookie('refresh_token')
+        return response
 
 
 class ProfileView(APIView):

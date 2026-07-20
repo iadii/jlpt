@@ -30,10 +30,11 @@ class AuthService:
         return user, tokens
 
     @staticmethod
-    def login(email: str, password: str):
-        """Authenticate user by email and return (user, tokens) tuple."""
+    def login(username: str, password: str):
+        """Authenticate user by email or username and return (user, tokens) tuple."""
+        from django.db.models import Q
         try:
-            user_obj = User.objects.get(email=email)
+            user_obj = User.objects.get(Q(email=username) | Q(username=username))
         except User.DoesNotExist:
             raise AuthenticationException()
 

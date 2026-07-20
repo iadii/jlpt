@@ -6,13 +6,14 @@ import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Lock, Mail, User } from 'lucide-react';
+import { Lock, Mail, User, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 
 export default function RegisterPage() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -23,8 +24,8 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      await api.post('/auth/register/', { username, email, password });
-      // Usually register returns tokens directly, but we can redirect to login to be safe
+      await api.post('/auth/register/', { email, username, password });
+      // Redirect to login instead of auto-logging in
       router.push('/login');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed. Try again.');
@@ -42,7 +43,7 @@ export default function RegisterPage() {
           </div>
           <CardTitle className="text-3xl font-bold tracking-tight">Create Account</CardTitle>
           <CardDescription className="text-base">
-            Start mastering Japanese for JLPT
+            Start your journey to Japanese fluency
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -65,7 +66,7 @@ export default function RegisterPage() {
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input 
                   type="email" 
-                  placeholder="Email" 
+                  placeholder="Email address" 
                   className="pl-10 h-12 bg-background/50 border-muted-foreground/20"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -77,24 +78,31 @@ export default function RegisterPage() {
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input 
-                  type="password" 
-                  placeholder="Password" 
-                  className="pl-10 h-12 bg-background/50 border-muted-foreground/20"
+                  type={showPassword ? "text" : "password"} 
+                  placeholder="Password (min 8 chars)" 
+                  className="pl-10 pr-10 h-12 bg-background/50 border-muted-foreground/20"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
+                <button 
+                  type="button" 
+                  className="absolute right-3 top-3 text-muted-foreground hover:text-primary transition-colors"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
             </div>
             
             {error && <div className="text-destructive text-sm font-medium p-2 bg-destructive/10 rounded-md">{error}</div>}
             
             <Button type="submit" variant="premium" className="w-full h-12 text-lg mt-6" disabled={loading}>
-              {loading ? 'Creating...' : 'Sign Up'}
+              {loading ? 'Creating Account...' : 'Sign Up'}
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="flex justify-center text-sm">
+        <CardFooter className="flex flex-col space-y-2 text-center text-sm">
           <Link href="/login" className="text-muted-foreground hover:text-primary transition-colors">
             Already have an account? <span className="font-semibold">Sign in</span>
           </Link>

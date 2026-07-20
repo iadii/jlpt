@@ -14,7 +14,7 @@ class RegisterRequest(serializers.Serializer):
 
 class LoginRequest(serializers.Serializer):
     """POST /api/auth/login/"""
-    email = serializers.EmailField()
+    username = serializers.CharField()
     password = serializers.CharField()
 
 

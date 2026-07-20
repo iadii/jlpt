@@ -102,18 +102,18 @@ npm install
 ### 2. Django Backend Setup
 ```bash
 cd backend
-python3 -m venv .venv
+uv venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+uv pip install -r requirements.txt
 python manage.py migrate
 ```
 
 ### 3. FastAPI ML Service Setup
 ```bash
 cd backend/ml_service
-python3 -m venv .venv
+uv venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+uv pip install -r requirements.txt
 ```
 
 ### 4. Running the Ecosystem
