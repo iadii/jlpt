@@ -2,7 +2,7 @@
   <!-- <img src="https://upload.wikimedia.org/wikipedia/commons/9/9e/Flag_of_Japan.svg" alt="JLPT Sensei Logo" width="120" /> -->
   <h1>JLPT Sensei</h1>
   <p>
-    <em>A Next-Generation, AI-Powered Japanese Language Learning Ecosystem</em>
+    <em>A Next-Generation, Enterprise-Grade Japanese Language Learning Ecosystem</em>
   </p>
 
   <!-- Badges -->
@@ -16,20 +16,22 @@
 
   <br />
   <img src="screenshots/vocabulary.png" alt="Vocabulary Explorer" width="800" />
-  <p><em>Vocabulary Explorer — JLPT N5 to N1 with real English meanings & pagination</em></p>
+  <p><em>Vocabulary Explorer — JLPT N5 to N1 with real English meanings</em></p>
   <br />
   <img src="screenshots/dashboard.png" alt="User Dashboard" width="800" />
-  <p><em>User Dashboard — Progress tracking, day streaks & study modules</em></p>
+  <p><em>User Dashboard — Progress tracking, daily study goal</em></p>
 </div>
 
 ---
 
 ## 📖 Table of Contents
 - [Overview](#-overview)
+- [Key Features & Modules](#-key-features--modules)
 - [System Architecture](#-system-architecture)
 - [Project Structure](#-project-structure)
 - [Prerequisites](#-prerequisites)
 - [Local Development Setup](#-local-development-setup)
+- [Data Seeding Commands](#-data-seeding-commands)
 - [Testing & Quality Assurance](#-testing--quality-assurance)
 - [Deployment Strategy](#-deployment-strategy)
 - [Contributing](#-contributing)
@@ -39,6 +41,34 @@
 ## 🎯 Overview
 
 **JLPT Sensei** is an enterprise-grade platform designed to guide users from absolute beginner (N5) to advanced fluency (N1). Moving beyond traditional flashcards, the platform leverages Machine Learning (IRT, Half-Life Regression) and LLM-powered AI Tutors to create a hyper-personalized, adaptive learning journey.
+
+---
+
+## ✨ Key Features & Modules
+
+### 📖 1. Vocabulary Explorer (`/learn/vocabulary`)
+- **6,900+ JLPT Words**: Full dataset across N5, N4, N3, N2, N1 with furigana, romaji, real English meanings, and part-of-speech tags.
+- **Page-by-Page Pagination**: Clean `< Previous` and `Next >` controls with word range indicators (`Showing 1–50 words (Page 1)`).
+- **Native TTS Audio**: One-click Japanese (`ja-JP`) audio pronunciation using Web Speech API.
+
+### 🈁 2. Kanji Explorer (`/learn/kanji`)
+- **2,210+ JLPT Kanji**: Complete dataset with Onyomi (カタカナ), Kunyomi (ひらがな), meanings, stroke counts, and difficulty rankings.
+- **SVG Stroke Order Animation**: Interactive modal visualizing stroke paths and stroke counts.
+- **Native TTS Audio**: Pronunciation playback for character readings.
+
+### 📝 3. Grammar & Sentence Patterns (`/learn/grammar`)
+- **JLPT N5–N1 Syntax Rules**: Color-coded sentence structure cards (`[Noun] は [Noun] です`).
+- **Example Sentences**: Interactive example sentence cards with Japanese, Romaji, English translations, and native TTS audio.
+
+### ⚙️ 4. Account Settings & Preferences (`/settings`)
+- Profile overview (Username, Email, Member Since, XP).
+- Interactive target JLPT level switcher (N5 → N1) and Daily Study Goal picker (5–60 mins).
+
+### 🔐 5. Enterprise Security & Architecture
+- **HttpOnly Cookies & SimpleJWT**: Secure authentication storing JWT access and refresh tokens in HttpOnly cookies.
+- **Centralized API Versioning**: `/api/v1/` prefix with Django REST Framework `URLPathVersioning`.
+- **Environment Isolation**: `python-decouple` configuration via `.env`.
+- **Rate Limiting**: Built-in API throttling protection.
 
 ---
 
@@ -71,15 +101,16 @@ The application is built on a decoupled, service-oriented architecture designed 
 ```text
 japanese-l/
 ├── backend/                  # Monolithic Core API (Django)
-│   ├── config/               # Main settings and WSGI/ASGI configurations
+│   ├── config/               # Project settings & root routing
 │   ├── ml_service/           # Standalone FastAPI ML Microservice
-│   ├── shared/               # Cross-cutting concerns (mixins, base models)
-│   └── */                    # Django domain apps (e.g., accounts, vocabulary)
+│   ├── shared/               # ApiResponse wrapper, Cookie JWT auth, pagination
+│   └── */                    # Django domain apps (accounts, vocabulary, kanji, grammar)
 ├── frontend/                 # Web Application (Next.js)
 │   ├── src/app/              # App Router pages and layouts
 │   ├── src/components/       # Reusable UI elements and generic components
-│   ├── src/lib/              # API clients, utilities, and integrations
+│   ├── src/lib/              # Axios client, TTS helper, utilities
 │   └── src/store/            # Zustand state management slices
+├── screenshots/              # Application screenshots
 ├── start.sh                  # Universal local orchestration script
 └── README.md                 # Project documentation
 ```
@@ -89,24 +120,29 @@ japanese-l/
 ## ⚙️ Prerequisites
 
 Before you begin, ensure you have the following installed on your local machine:
-- **Node.js**: `v20.0.0` or higher (managed via `nvm` recommended)
-- **Python**: `3.10.x` or higher (managed via `pyenv` recommended)
-- **PostgreSQL**: `v15` or higher (Local installation or Docker container)
-- **Redis**: (Optional, required for upcoming Celery/Channels integration)
+- **Node.js**: `v20.0.0` or higher
+- **Python**: `3.10.x` or higher (managed via `uv` or `venv`)
+- **PostgreSQL**: `v15` or higher
+- **Redis**: (Required for caching & Celery async tasks)
 
 ---
 
 ## 🚀 Local Development Setup
 
-To streamline local development, we provide a unified startup script. However, you must install dependencies for all three services first.
+### 1. Environment Configuration
+Copy the example environment file:
+```bash
+cd backend
+cp .env.example .env
+```
 
-### 1. Frontend Setup
+### 2. Frontend Setup
 ```bash
 cd frontend
 npm install
 ```
 
-### 2. Django Backend Setup
+### 3. Django Backend Setup
 ```bash
 cd backend
 uv venv .venv
@@ -115,16 +151,15 @@ uv pip install -r requirements.txt
 python manage.py migrate
 ```
 
-### 3. FastAPI ML Service Setup
+### 4. Seed Data (JLPT Vocabulary, Kanji & Grammar)
 ```bash
-cd backend/ml_service
-uv venv .venv
-source .venv/bin/activate
-uv pip install -r requirements.txt
+python manage.py seed_jlpt
+python manage.py seed_kanji
+python manage.py seed_grammar
 ```
 
-### 4. Running the Ecosystem
-From the root of the repository, execute the orchestration script:
+### 5. Running the Ecosystem
+From the root of the repository:
 
 ```bash
 chmod +x start.sh
@@ -138,41 +173,44 @@ chmod +x start.sh
 
 ---
 
-## 🧪 Testing & Quality Assurance
+## 🌾 Data Seeding Commands
 
-Quality is enforced via automated pipelines. Before submitting a PR, ensure local tests pass.
+Populate your local PostgreSQL database with complete datasets via open API management commands:
+
+| Command | Dataset Description | Count |
+|:---|:---|:---|
+| `python manage.py seed_jlpt` | JLPT Vocabulary N5–N1 with furigana, romaji & English meanings | 6,922 words |
+| `python manage.py seed_kanji` | JLPT Kanji N5–N1 with Onyomi, Kunyomi, meanings & stroke counts | 2,211 Kanji |
+| `python manage.py seed_grammar` | JLPT Grammar N5–N1 with structure patterns & example sentences | 17+ patterns |
+
+---
+
+## 🧪 Testing & Quality Assurance
 
 - **Frontend:** 
   ```bash
-  cd frontend && npm run lint && npm run test
+  cd frontend && npm run lint
   ```
 - **Backend (Django):** 
   ```bash
-  cd backend && source .venv/bin/activate && python manage.py test
-  ```
-- **ML Service:** 
-  ```bash
-  cd backend/ml_service && source .venv/bin/activate && pytest
+  cd backend && source .venv/bin/activate && python manage.py check
   ```
 
 ---
 
 ## 🚢 Deployment Strategy
 
-The application is designed for cloud-native deployment (AWS/GCP) using containerization.
-
 - **Frontend:** Deployed via Vercel for Edge Caching and optimal Web Vitals.
-- **Django Backend:** Dockerized and orchestrated via Kubernetes or AWS ECS, backed by Managed PostgreSQL (RDS).
-- **ML Service:** Deployed as an independent scalable container service, potentially utilizing GPU-backed nodes if local inference is adopted in the future.
+- **Django Backend:** Dockerized and orchestrated via AWS ECS or Kubernetes, backed by Managed PostgreSQL (RDS).
+- **ML Service:** Deployed as an independent scalable container service utilizing GPU-backed nodes when needed.
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions! Please adhere to our branching strategy:
 1. Fork the repository.
 2. Create a feature branch (`git checkout -b feature/amazing-feature`).
-3. Commit your changes utilizing Conventional Commits (`git commit -m 'feat: Add amazing feature'`).
+3. Commit your changes (`git commit -m 'feat: Add amazing feature'`).
 4. Push to the branch (`git push origin feature/amazing-feature`).
 5. Open a Pull Request.
 
