@@ -7,13 +7,14 @@ Contains real English meanings, furigana, romaji for all 5 JLPT levels.
 import json
 import urllib.request
 import urllib.error
+from decouple import config
 from django.core.management.base import BaseCommand
 from vocabulary.models import Vocabulary
 from django.db import transaction
 
 
 # API returns words with: word, meaning, furigana, romaji, level
-API_BASE = "https://jlpt-vocab-api.vercel.app/api/words"
+API_BASE = config('JLPT_VOCAB_API_URL', default='https://jlpt-vocab-api.vercel.app/api/words')
 
 # Map JLPT levels (API uses 1-5, we use n1-n5)
 LEVELS = [5, 4, 3, 2, 1]
