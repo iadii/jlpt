@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
@@ -27,8 +28,12 @@ export default function RegisterPage() {
       await api.post('/auth/register/', { email, username, password });
       // Redirect to login instead of auto-logging in
       router.push('/login');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed. Try again.');
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || 'Registration failed. Try again.');
+      } else {
+        setError('Registration failed. Try again.');
+      }
     } finally {
       setLoading(false);
     }

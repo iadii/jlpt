@@ -2,7 +2,7 @@
 
 import { useAuthStore } from '@/store/useAuthStore';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { BookOpen, Home, Trophy, LogOut, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';

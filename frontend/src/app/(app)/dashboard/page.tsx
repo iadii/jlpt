@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Flame, Brain, BookA, BookOpen, Target, Play } from 'lucide-react';
 import Link from 'next/link';
@@ -12,7 +12,7 @@ const fetchProgressSummary = async () => {
   try {
     const { data } = await api.get('/progress/summary/');
     return data.data;
-  } catch (e) {
+  } catch (_e) {
     return { due_reviews: 0, new_items: 0, accuracy: 0, total_xp: 0 };
   }
 };
@@ -21,7 +21,7 @@ const fetchStreak = async () => {
   try {
     const { data } = await api.get('/streaks/current/');
     return data.data;
-  } catch (e) {
+  } catch (_e) {
     return { current_streak: 0, longest_streak: 0 };
   }
 };
@@ -30,7 +30,7 @@ const fetchN5Progress = async () => {
   try {
     const { data } = await api.get('/progress/n5/');
     return data.data;
-  } catch (e) {
+  } catch (_e) {
     return { percentage: 0 };
   }
 };
