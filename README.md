@@ -1,6 +1,6 @@
 <div align="center">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/9/9e/Flag_of_Japan.svg" alt="JLPT Sensei Logo" width="120" />
-  <h1>JLPT Sensei - Enterprise Platform</h1>
+  <!-- <img src="https://upload.wikimedia.org/wikipedia/commons/9/9e/Flag_of_Japan.svg" alt="JLPT Sensei Logo" width="120" /> -->
+  <h1>JLPT Sensei</h1>
   <p>
     <em>A Next-Generation, AI-Powered Japanese Language Learning Ecosystem</em>
   </p>
@@ -13,6 +13,13 @@
     <img src="https://img.shields.io/badge/FastAPI-0.139-009688?logo=fastapi" alt="FastAPI">
     <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License">
   </p>
+
+  <br />
+  <img src="screenshots/vocabulary.png" alt="Vocabulary Explorer" width="800" />
+  <p><em>Vocabulary Explorer — JLPT N5 to N1 with real English meanings & pagination</em></p>
+  <br />
+  <img src="screenshots/dashboard.png" alt="User Dashboard" width="800" />
+  <p><em>User Dashboard — Progress tracking, day streaks & study modules</em></p>
 </div>
 
 ---
