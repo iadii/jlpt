@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Volume2 } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, Volume2 } from 'lucide-react';
 import Link from 'next/link';
 
 interface Vocabulary {
@@ -29,20 +29,23 @@ const LEVELS = ['n5', 'n4', 'n3', 'n2', 'n1'] as const;
 
 export default function VocabularyExplorer() {
   const [level, setLevel] = useState<string>('n5');
+  const [currentCursor, setCurrentCursor] = useState<string | null>(null);
+  const [pageNumber, setPageNumber] = useState<number>(1);
+  const [cursorHistory, setCursorHistory] = useState<(string | null)[]>([null]);
+  
   const hasHydrated = useAuthStore((s) => s._hasHydrated);
 
-  const fetchVocabulary = async ({ pageParam }: { pageParam: string | null }): Promise<PaginatedResponse> => {
+  const fetchVocabulary = async (cursor: string | null): Promise<PaginatedResponse> => {
     let url = `/words/${level}/`;
-    if (pageParam) {
+    if (cursor) {
       try {
-        const cursorObj = new URL(pageParam);
-        const cursor = cursorObj.searchParams.get('cursor');
-        if (cursor) {
-          url += `?cursor=${cursor}`;
+        const cursorObj = new URL(cursor);
+        const param = cursorObj.searchParams.get('cursor');
+        if (param) {
+          url += `?cursor=${param}`;
         }
       } catch {
-        // If pageParam isn't a valid URL, treat it as a raw cursor
-        url += `?cursor=${pageParam}`;
+        url += `?cursor=${cursor}`;
       }
     }
     const { data } = await api.get(url);
@@ -52,57 +55,94 @@ export default function VocabularyExplorer() {
   const {
     data,
     error,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    status,
-  } = useInfiniteQuery({
-    queryKey: ['vocabulary', level],
-    queryFn: fetchVocabulary,
-    getNextPageParam: (lastPage) => lastPage.next,
-    initialPageParam: null as string | null,
+    isLoading,
+    isFetching,
+    isError,
+  } = useQuery({
+    queryKey: ['vocabulary', level, currentCursor],
+    queryFn: () => fetchVocabulary(currentCursor),
     enabled: hasHydrated,
   });
 
-  const words = data?.pages.flatMap((page) => page.results) || [];
+  const handleLevelChange = (newLevel: string) => {
+    setLevel(newLevel);
+    setCurrentCursor(null);
+    setPageNumber(1);
+    setCursorHistory([null]);
+  };
+
+  const handleNextPage = () => {
+    if (!data?.next) return;
+    const nextCursor = data.next;
+    setCursorHistory((prev) => [...prev, nextCursor]);
+    setCurrentCursor(nextCursor);
+    setPageNumber((prev) => prev + 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handlePrevPage = () => {
+    if (pageNumber <= 1) return;
+    const prevIndex = pageNumber - 2;
+    const prevCursor = cursorHistory[prevIndex] ?? null;
+    setCurrentCursor(prevCursor);
+    setPageNumber((prev) => prev - 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const words = data?.results || [];
+  const pageSize = 50;
+  const startItem = (pageNumber - 1) * pageSize + 1;
+  const endItem = startItem + words.length - 1;
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-6xl mx-auto pb-12">
-      <div className="flex items-center gap-4">
-        <Link href="/learn">
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        </Link>
-        <div>
-          <h1 className="h1-premium text-3xl">Vocabulary Explorer</h1>
-          <p className="text-muted-foreground">Browse all 8,000+ words across the JLPT spectrum.</p>
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Link href="/learn">
+            <Button variant="ghost" size="icon" className="rounded-full">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </Link>
+          <div>
+            <h1 className="h1-premium text-3xl">Vocabulary Explorer</h1>
+            <p className="text-muted-foreground">Browse words across the JLPT spectrum with page navigation.</p>
+          </div>
         </div>
       </div>
 
-      {/* Level Selector */}
-      <div className="flex gap-2 p-1 bg-secondary/50 rounded-xl w-fit">
-        {LEVELS.map((l) => (
-          <button
-            key={l}
-            onClick={() => setLevel(l)}
-            className={`px-6 py-2 rounded-lg text-sm font-bold uppercase transition-all ${
-              level === l 
-                ? 'bg-primary text-primary-foreground shadow-md' 
-                : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-            }`}
-          >
-            {l}
-          </button>
-        ))}
+      {/* Level Selector & Info Bar */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex gap-2 p-1 bg-secondary/50 rounded-xl w-fit">
+          {LEVELS.map((l) => (
+            <button
+              key={l}
+              onClick={() => handleLevelChange(l)}
+              className={`px-6 py-2 rounded-lg text-sm font-bold uppercase transition-all ${
+                level === l 
+                  ? 'bg-primary text-primary-foreground shadow-md' 
+                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+              }`}
+            >
+              {l}
+            </button>
+          ))}
+        </div>
+
+        {/* Page status pill */}
+        {!isLoading && !isError && words.length > 0 && (
+          <div className="text-sm font-medium text-muted-foreground bg-secondary/30 px-4 py-2 rounded-lg border border-border/40">
+            Showing <span className="text-foreground font-bold">{startItem}–{endItem}</span> words (Page {pageNumber})
+          </div>
+        )}
       </div>
 
-      {/* Grid */}
-      {status === 'pending' ? (
-        <div className="flex justify-center p-12">
+      {/* Content Grid */}
+      {isLoading || isFetching ? (
+        <div className="flex justify-center p-16">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
-      ) : status === 'error' ? (
+      ) : isError ? (
         <div className="text-center text-destructive p-8 bg-destructive/10 rounded-xl">
           <p className="font-medium">Failed to load vocabulary.</p>
           <p className="text-sm text-muted-foreground mt-1">
@@ -152,19 +192,32 @@ export default function VocabularyExplorer() {
             ))}
           </div>
 
-          <div className="flex justify-center pt-8">
+          {/* Pagination Controls */}
+          <div className="flex items-center justify-between pt-8 border-t border-border/40">
             <Button
               variant="outline"
-              size="lg"
-              onClick={() => fetchNextPage()}
-              disabled={!hasNextPage || isFetchingNextPage}
-              className="w-full max-w-sm rounded-full"
+              onClick={handlePrevPage}
+              disabled={pageNumber <= 1 || isFetching}
+              className="gap-2 rounded-xl"
             >
-              {isFetchingNextPage
-                ? 'Loading more...'
-                : hasNextPage
-                ? 'Load More'
-                : 'End of List'}
+              <ChevronLeft className="h-4 w-4" />
+              Previous
+            </Button>
+
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-muted-foreground">
+                Page <span className="text-foreground font-bold">{pageNumber}</span>
+              </span>
+            </div>
+
+            <Button
+              variant="outline"
+              onClick={handleNextPage}
+              disabled={!data?.next || isFetching}
+              className="gap-2 rounded-xl"
+            >
+              Next
+              <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </>
