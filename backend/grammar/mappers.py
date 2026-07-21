@@ -8,8 +8,10 @@ class GrammarMapper:
         return {
             'id': gp.id,
             'title': gp.title,
+            'explanation': gp.explanation,
             'structure': gp.structure,
             'jlpt_level': gp.jlpt_level,
+            'example_sentences': gp.example_sentences,
             'difficulty_order': gp.difficulty_order,
         }
 

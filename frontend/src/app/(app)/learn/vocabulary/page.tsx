@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, Volume2 } from 'lucide-react';
 import Link from 'next/link';
+import { speakJapanese } from '@/lib/tts';
 
 interface Vocabulary {
   id: number;
@@ -161,7 +162,13 @@ export default function VocabularyExplorer() {
                         {word.part_of_speech}
                       </p>
                     </div>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-full">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => speakJapanese(word.kanji || word.kana)}
+                      title="Listen"
+                      className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors"
+                    >
                       <Volume2 className="h-4 w-4" />
                     </Button>
                   </div>
