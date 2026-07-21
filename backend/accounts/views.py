@@ -8,6 +8,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 
+from django.conf import settings
 from shared.response import ApiResponse
 from shared.exceptions import ServiceException, AuthenticationException
 
@@ -24,7 +25,7 @@ def _set_auth_cookies(response, tokens):
         key='access_token',
         value=access_token,
         httponly=True,
-        secure=False,  # Set True in prod
+        secure=settings.COOKIE_SECURE,
         samesite='Lax',
         max_age=30 * 60
     )
@@ -32,7 +33,7 @@ def _set_auth_cookies(response, tokens):
         key='refresh_token',
         value=refresh_token,
         httponly=True,
-        secure=False,  # Set True in prod
+        secure=settings.COOKIE_SECURE,
         samesite='Lax',
         max_age=7 * 24 * 60 * 60
     )
@@ -94,7 +95,7 @@ class CookieTokenRefreshView(APIView):
             key='access_token',
             value=access,
             httponly=True,
-            secure=False,
+            secure=settings.COOKIE_SECURE,
             samesite='Lax',
             max_age=30 * 60
         )

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { useAuthStore } from '@/store/useAuthStore';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, Volume2 } from 'lucide-react';
@@ -24,29 +25,28 @@ interface PaginatedResponse {
   results: Vocabulary[];
 }
 
+const LEVELS = ['n5', 'n4', 'n3', 'n2', 'n1'] as const;
+
 export default function VocabularyExplorer() {
-  const [level, setLevel] = useState('n5');
-  const [mounted, setMounted] = useState(false);
+  const [level, setLevel] = useState<string>('n5');
+  const hasHydrated = useAuthStore((s) => s._hasHydrated);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true);
-  }, []);
-
-  const fetchVocabulary = async ({ pageParam = null }): Promise<PaginatedResponse> => {
-    // If we have a pageParam (the next URL), we extract the cursor from it
+  const fetchVocabulary = async ({ pageParam }: { pageParam: string | null }): Promise<PaginatedResponse> => {
     let url = `/words/${level}/`;
     if (pageParam) {
-      const cursorObj = new URL(pageParam);
-      const cursor = cursorObj.searchParams.get('cursor');
-      if (cursor) {
-        url += `?cursor=${cursor}`;
+      try {
+        const cursorObj = new URL(pageParam);
+        const cursor = cursorObj.searchParams.get('cursor');
+        if (cursor) {
+          url += `?cursor=${cursor}`;
+        }
+      } catch {
+        // If pageParam isn't a valid URL, treat it as a raw cursor
+        url += `?cursor=${pageParam}`;
       }
     }
     const { data } = await api.get(url);
-    // If the backend wraps paginated responses in our ApiResponse format, it might be data.data.
-    // If it uses raw DRF pagination, it's just data.
-    return data.data || data; 
+    return data.data || data;
   };
 
   const {
@@ -60,13 +60,11 @@ export default function VocabularyExplorer() {
     queryKey: ['vocabulary', level],
     queryFn: fetchVocabulary,
     getNextPageParam: (lastPage) => lastPage.next,
-    initialPageParam: null,
-    enabled: mounted,
+    initialPageParam: null as string | null,
+    enabled: hasHydrated,
   });
 
   const words = data?.pages.flatMap((page) => page.results) || [];
-
-  const levels = ['n5', 'n4', 'n3', 'n2', 'n1'];
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-6xl mx-auto pb-12">
@@ -84,7 +82,7 @@ export default function VocabularyExplorer() {
 
       {/* Level Selector */}
       <div className="flex gap-2 p-1 bg-secondary/50 rounded-xl w-fit">
-        {levels.map((l) => (
+        {LEVELS.map((l) => (
           <button
             key={l}
             onClick={() => setLevel(l)}
@@ -105,9 +103,11 @@ export default function VocabularyExplorer() {
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : status === 'error' ? (
-        <div className="text-center text-destructive p-8 bg-destructive/10 rounded-xl flex flex-col gap-2 items-center">
-          <p>Error loading vocabulary. Please try again.</p>
-          <p className="text-sm font-mono bg-background p-2 rounded">{error?.message || JSON.stringify(error)}</p>
+        <div className="text-center text-destructive p-8 bg-destructive/10 rounded-xl">
+          <p className="font-medium">Failed to load vocabulary.</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.'}
+          </p>
         </div>
       ) : (
         <>
@@ -133,6 +133,11 @@ export default function VocabularyExplorer() {
                     {word.kanji && (
                       <p className="text-lg text-muted-foreground font-medium">
                         {word.kana}
+                      </p>
+                    )}
+                    {word.romaji && (
+                      <p className="text-sm text-muted-foreground/70 italic mt-1">
+                        {word.romaji}
                       </p>
                     )}
                   </div>

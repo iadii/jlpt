@@ -27,12 +27,13 @@ class ApiResponse:
         }, status=http_status.HTTP_201_CREATED)
 
     @staticmethod
-    def error(message="Something went wrong", errors=None, status=http_status.HTTP_400_BAD_REQUEST):
+    def error(message="Something went wrong", errors=None, status=http_status.HTTP_400_BAD_REQUEST, status_code=None):
+        http_stat = status_code if status_code is not None else status
         return Response({
             'status': 'error',
             'message': message,
             'errors': errors,
-        }, status=status)
+        }, status=http_stat)
 
     @staticmethod
     def not_found(message="Resource not found"):
