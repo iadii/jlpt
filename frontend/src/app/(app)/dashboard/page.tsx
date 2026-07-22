@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -48,6 +48,22 @@ const fetchN5Progress = async () => {
 export default function DashboardPage() {
   const { user } = useAuthStore();
   const containerRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
+
+  const checkinMutation = useMutation({
+    mutationFn: async () => {
+      await api.post('/streaks/checkin/');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['streak-summary'] });
+    },
+  });
+
+  useEffect(() => {
+    // Fire daily check-in silently in the background
+    checkinMutation.mutate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { data: progress } = useQuery({
     queryKey: ['progress-summary'],

@@ -7,11 +7,11 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { 
-  Cog6ToothIcon, 
-  UserIcon, 
-  FlagIcon, 
-  ClockIcon, 
+import {
+  Cog6ToothIcon,
+  UserIcon,
+  FlagIcon,
+  ClockIcon,
   ShieldCheckIcon,
   CheckIcon,
   ArrowPathIcon
@@ -90,110 +90,113 @@ export default function SettingsPage() {
   }
 
   return (
-    <GSAPReveal className="space-y-8 max-w-3xl mx-auto pb-12">
+    <GSAPReveal className="space-y-8 max-w-4xl mx-auto pb-12">
       <div>
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest mb-2">
-          Account & Preferences
+          Preferences
         </div>
         <h1 className="h1-premium text-3xl sm:text-4xl">Settings</h1>
-        <p className="text-muted-foreground text-base mt-1">Manage your profile details and study preferences.</p>
+        <p className="text-muted-foreground text-base mt-1">Manage your study preferences and account security.</p>
       </div>
 
-      <GSAPReveal staggerChildren delay={0.1} className="space-y-6">
-        {/* Profile Overview moved to /profile */}
+      <GSAPReveal staggerChildren delay={0.1} className="space-y-0">
+        
+        {/* Study Preferences Section Header */}
+        <div className="pb-4 border-b border-border/40">
+          <h2 className="text-xl font-semibold flex items-center gap-3">
+             <FlagIcon className="h-6 w-6 text-accent" />
+             Study Preferences
+          </h2>
+        </div>
 
-        {/* Study Preferences */}
-        <Card className="glass-card rounded-2xl overflow-hidden border-border/60">
-          <CardHeader className="flex flex-row items-center gap-4 pb-2 border-b border-border/40">
-            <div className="bg-accent/10 p-3 rounded-xl text-accent border border-accent/20">
-              <FlagIcon className="h-6 w-6" />
+        {/* JLPT Target Level Row */}
+        <div className="py-6 border-b border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1 max-w-md">
+            <h3 className="text-sm font-semibold text-foreground">Target JLPT Level</h3>
+            <p className="text-sm text-muted-foreground">Select the JLPT exam level you are currently studying for. This affects your curriculum.</p>
+          </div>
+          <div className="w-full sm:w-64 relative">
+            <select
+              value={displayLevel}
+              onChange={(e) => setCurrentLevel(e.target.value)}
+              className="w-full appearance-none bg-secondary/50 border border-border/60 text-foreground font-semibold text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer transition-all pr-10"
+            >
+              {JLPT_LEVELS.map((level) => (
+                <option key={level.value} value={level.value} className="bg-background">{level.label}</option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-muted-foreground">
+              <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
             </div>
-            <CardTitle className="text-xl font-semibold">Study Preferences</CardTitle>
-          </CardHeader>
-          <CardContent className="p-6 space-y-6">
-            {/* JLPT Target Level */}
-            <div className="space-y-4">
-              <label className="text-sm font-semibold text-foreground">Target JLPT Level</label>
-              <div className="flex flex-wrap gap-3">
-                {JLPT_LEVELS.map((level) => (
-                  <button
-                    key={level.value}
-                    onClick={() => setCurrentLevel(level.value)}
-                    className={`px-5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 ${
-                      displayLevel === level.value
-                        ? 'bg-primary text-primary-foreground shadow-md scale-105'
-                        : 'bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary'
-                    }`}
-                  >
-                    {level.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+          </div>
+        </div>
 
-            {/* Daily Goal */}
-            <div className="space-y-4 pt-2">
-              <label className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <ClockIcon className="h-4 w-4 text-muted-foreground" />
-                Daily Study Goal
-              </label>
-              <div className="flex flex-wrap gap-3">
-                {DAILY_GOALS.map((goal) => (
-                  <button
-                    key={goal}
-                    onClick={() => setDailyGoal(goal)}
-                    className={`px-5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 ${
-                      displayGoal === goal
-                        ? 'bg-primary text-primary-foreground shadow-md scale-105'
-                        : 'bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary'
-                    }`}
-                  >
-                    {goal} min
-                  </button>
-                ))}
-              </div>
+        {/* Daily Goal Row */}
+        <div className="py-6 border-b border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1 max-w-md">
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <ClockIcon className="h-4 w-4 text-muted-foreground" /> Daily Study Goal
+            </h3>
+            <p className="text-sm text-muted-foreground">Set a daily target to maintain your study streak and build consistency.</p>
+          </div>
+          <div className="w-full sm:w-64 relative">
+            <select
+              value={displayGoal}
+              onChange={(e) => setDailyGoal(Number(e.target.value))}
+              className="w-full appearance-none bg-secondary/50 border border-border/60 text-foreground font-semibold text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer transition-all pr-10"
+            >
+              {DAILY_GOALS.map((goal) => (
+                <option key={goal} value={goal} className="bg-background">{goal} minutes per day</option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-muted-foreground">
+              <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
             </div>
+          </div>
+        </div>
 
-            {/* Save Button */}
-            <div className="flex items-center gap-4 pt-4 border-t border-border/50">
-              <Button
-                onClick={handleSave}
-                disabled={!hasChanges || updateMutation.isPending}
-                className="gap-2 rounded-xl font-semibold shadow-md px-6 bg-primary hover:bg-primary/90 text-white"
-              >
-                {updateMutation.isPending ? (
-                  <ArrowPathIcon className="h-4 w-4 animate-spin" />
-                ) : saved ? (
-                  <CheckIcon className="h-4 w-4" />
-                ) : (
-                  <Cog6ToothIcon className="h-4 w-4" />
-                )}
-                {saved ? 'Saved!' : 'Save Changes'}
-              </Button>
-              {updateMutation.isError && (
-                <p className="text-sm text-destructive font-semibold">Failed to save. Please try again.</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Save Changes Row */}
+        <div className="py-6 flex items-center justify-end gap-4">
+           {updateMutation.isError && (
+             <p className="text-sm text-destructive font-semibold">Failed to save. Please try again.</p>
+           )}
+           <Button
+             onClick={handleSave}
+             disabled={!hasChanges || updateMutation.isPending}
+             className="gap-2 rounded-xl font-semibold shadow-md px-8 py-6 bg-primary hover:bg-primary/90 text-white transition-all"
+           >
+             {updateMutation.isPending ? (
+               <ArrowPathIcon className="h-5 w-5 animate-spin" />
+             ) : saved ? (
+               <CheckIcon className="h-5 w-5" />
+             ) : (
+               <Cog6ToothIcon className="h-5 w-5" />
+             )}
+             {saved ? 'Saved Successfully' : 'Save Preferences'}
+           </Button>
+        </div>
 
-        {/* Security */}
-        <Card className="glass-card rounded-2xl overflow-hidden border-border/60">
-          <CardHeader className="flex flex-row items-center gap-4 pb-2 border-b border-border/40">
-            <div className="bg-blue-50 p-3 rounded-xl text-blue-500 border border-blue-100">
-              <ShieldCheckIcon className="h-6 w-6" />
-            </div>
-            <CardTitle className="text-xl font-semibold">Security</CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <p className="text-muted-foreground text-sm mb-4">
-              Password change and account deletion features are protected via HttpOnly session security.
-            </p>
-            <Button variant="outline" disabled className="opacity-50 rounded-xl font-semibold">
-              Change Password (Protected)
+        {/* Security Section Header */}
+        <div className="pt-10 pb-4 border-b border-border/40">
+          <h2 className="text-xl font-semibold flex items-center gap-3">
+             <ShieldCheckIcon className="h-6 w-6 text-blue-500" />
+             Security & Privacy
+          </h2>
+        </div>
+
+        {/* Password Row */}
+        <div className="py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1 max-w-md">
+            <h3 className="text-sm font-semibold text-foreground">Change Password</h3>
+            <p className="text-sm text-muted-foreground">Password changes are protected via HttpOnly session security protocols.</p>
+          </div>
+          <div>
+            <Button variant="outline" disabled className="opacity-50 rounded-xl font-semibold w-full sm:w-auto px-6 py-6">
+              Change Password
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+
       </GSAPReveal>
     </GSAPReveal>
   );
