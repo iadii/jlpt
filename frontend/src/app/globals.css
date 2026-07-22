@@ -5,42 +5,49 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #f8fafc;
+  /* Mount Fuji & Tokyo Daytime Palette (Pastel & Crisp) */
+  --background: #f4f6fa;
   --foreground: #0f172a;
   
   --card: #ffffff;
   --card-foreground: #0f172a;
   
-  --primary: #e11d48; /* Crimson / Japanese Red */
+  --primary: #e63946; /* Japanese Torii Crimson */
   --primary-foreground: #ffffff;
   
-  --secondary: #f1f5f9;
-  --secondary-foreground: #0f172a;
+  --secondary: #e2e8f0;
+  --secondary-foreground: #1e293b;
   
   --muted: #f1f5f9;
   --muted-foreground: #64748b;
   
-  --accent: #f87171;
+  --accent: #415a77; /* Mount Fuji Indigo Blue */
   --accent-foreground: #ffffff;
+
+  --sakura: #ffb5a7; /* Pastel Sakura */
+  --matcha: #80ed99; /* Pastel Matcha */
+  --tokyo-pink: #ff0054; /* Tokyo Neon Pink */
+  --fuji-ice: #778da9; /* Fuji Mist */
   
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   
   --border: #e2e8f0;
   --input: #e2e8f0;
-  --ring: #e11d48;
+  --ring: #e63946;
   
-  --radius: 0.75rem;
+  --radius: 1rem;
 }
 
 .dark {
-  --background: #020617;
+  /* Mount Fuji Dusk & Tokyo Cyber Night Palette */
+  --background: #0b132b; /* Deep Fuji Night */
   --foreground: #f8fafc;
   
-  --card: #0f172a;
+  --card: #1c2541; /* Fuji Indigo Card */
   --card-foreground: #f8fafc;
   
-  --primary: #f43f5e;
+  --primary: #ff0054; /* Tokyo Neon Sakura */
   --primary-foreground: #ffffff;
   
   --secondary: #1e293b;
@@ -49,15 +56,20 @@
   --muted: #1e293b;
   --muted-foreground: #94a3b8;
   
-  --accent: #e11d48;
+  --accent: #3a506b; /* Fuji Deep Mist */
   --accent-foreground: #ffffff;
+
+  --sakura: #ff758f;
+  --matcha: #52b788;
+  --tokyo-pink: #ff0054;
+  --fuji-ice: #5bc0be;
   
-  --destructive: #7f1d1d;
+  --destructive: #991b1b;
   --destructive-foreground: #f8fafc;
   
   --border: #1e293b;
   --input: #1e293b;
-  --ring: #f43f5e;
+  --ring: #ff0054;
 }
 
 @theme inline {
@@ -73,6 +85,10 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-sakura: var(--sakura);
+  --color-matcha: var(--matcha);
+  --color-tokyo-pink: var(--tokyo-pink);
+  --color-fuji-ice: var(--fuji-ice);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
@@ -92,23 +108,49 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary;
+    @apply bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary min-h-screen relative overflow-x-hidden;
+    background-image: 
+      radial-gradient(circle at 15% 15%, rgba(230, 57, 70, 0.04) 0%, transparent 40%),
+      radial-gradient(circle at 85% 85%, rgba(65, 90, 119, 0.05) 0%, transparent 45%),
+      radial-gradient(circle at 50% 50%, rgba(255, 117, 143, 0.03) 0%, transparent 60%);
   }
 }
 
-/* Glassmorphism utilities */
+/* Glassmorphism & Enterprise Japanese Aesthetic */
 .glass {
   @apply bg-background/60 backdrop-blur-xl border border-border/50 shadow-sm;
 }
+
 .glass-card {
-  @apply bg-card/70 backdrop-blur-md border border-border/50 shadow-lg;
+  @apply bg-card/75 backdrop-blur-md border border-border/60 shadow-xl transition-all duration-300 hover:shadow-2xl hover:border-primary/40;
+}
+
+.glass-card-fuji {
+  background: linear-gradient(135deg, rgba(28, 37, 65, 0.85) 0%, rgba(11, 19, 43, 0.9) 100%);
+  @apply backdrop-blur-lg border border-fuji-ice/20 shadow-2xl;
+}
+
+.glass-card-sakura {
+  background: linear-gradient(135deg, rgba(255, 240, 243, 0.9) 0%, rgba(255, 229, 236, 0.7) 100%);
+  @apply backdrop-blur-md border border-sakura/30 shadow-lg dark:bg-gradient-to-br dark:from-pink-950/30 dark:to-slate-900/80;
 }
 
 /* Typography styles */
 .h1-premium {
-  @apply text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent;
+  @apply text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight bg-gradient-to-r from-primary via-fuji-ice to-foreground bg-clip-text text-transparent;
 }
 .h2-premium {
-  @apply text-3xl md:text-4xl font-bold tracking-tight;
+  @apply text-3xl md:text-4xl font-bold tracking-tight text-foreground;
 }
 
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/20 rounded-full hover:bg-primary/40 transition-colors;
+}

@@ -7,7 +7,8 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Settings, User, Target, Clock, Shield, Loader2, Check } from 'lucide-react';
+import { Settings, User, Target, Clock, Shield, Loader2, Check, Sparkles } from 'lucide-react';
+import { GSAPReveal } from '@/components/ui/GSAPReveal';
 
 interface UserProfile {
   id: number;
@@ -46,7 +47,6 @@ export default function SettingsPage() {
   const [currentLevel, setCurrentLevel] = useState<string | null>(null);
   const [dailyGoal, setDailyGoal] = useState<number | null>(null);
 
-  // Derived values: use local state if user changed, otherwise profile data
   const displayLevel = currentLevel ?? profile?.current_level ?? 'n5';
   const displayGoal = dailyGoal ?? profile?.daily_goal_minutes ?? 15;
 
@@ -75,148 +75,154 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex h-full items-center justify-center p-16">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-3xl mx-auto pb-12">
+    <GSAPReveal className="space-y-8 max-w-3xl mx-auto pb-12">
       <div>
-        <h1 className="h1-premium text-3xl">Account Settings</h1>
-        <p className="text-muted-foreground text-lg mt-1">Manage your profile and study preferences.</p>
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest mb-2">
+          <Sparkles className="h-3.5 w-3.5" />
+          Account & Preferences
+        </div>
+        <h1 className="h1-premium text-3xl sm:text-4xl">Settings</h1>
+        <p className="text-muted-foreground text-base mt-1">Manage your profile details and study preferences.</p>
       </div>
 
-      {/* Profile Overview */}
-      <Card className="glass-card">
-        <CardHeader className="flex flex-row items-center gap-4 pb-2">
-          <div className="bg-primary/20 p-3 rounded-full">
-            <User className="h-6 w-6 text-primary" />
-          </div>
-          <CardTitle className="text-xl">Profile</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-muted-foreground">Username</label>
-              <Input value={profile?.username || user?.username || ''} disabled className="bg-secondary/50" />
+      <GSAPReveal staggerChildren delay={0.1} className="space-y-6">
+        {/* Profile Overview */}
+        <Card className="glass-card rounded-3xl overflow-hidden border-border/60">
+          <CardHeader className="flex flex-row items-center gap-4 pb-2 border-b border-border/40">
+            <div className="bg-primary/20 p-3 rounded-2xl text-primary border border-primary/30">
+              <User className="h-6 w-6" />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-muted-foreground">Email</label>
-              <Input value={profile?.email || ''} disabled className="bg-secondary/50" />
+            <CardTitle className="text-xl font-extrabold">Profile Overview</CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Username</label>
+                <Input value={profile?.username || user?.username || ''} disabled className="bg-secondary/40 font-semibold rounded-xl" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Email</label>
+                <Input value={profile?.email || ''} disabled className="bg-secondary/40 font-semibold rounded-xl" />
+              </div>
             </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-muted-foreground">Member Since</label>
-              <Input
-                value={profile?.date_joined ? new Date(profile.date_joined).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}
-                disabled
-                className="bg-secondary/50"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Member Since</label>
+                <Input
+                  value={profile?.date_joined ? new Date(profile.date_joined).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}
+                  disabled
+                  className="bg-secondary/40 font-semibold rounded-xl"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total XP</label>
+                <Input value={profile?.total_xp?.toLocaleString() || '0'} disabled className="bg-secondary/40 font-semibold rounded-xl text-primary" />
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-muted-foreground">Total XP</label>
-              <Input value={profile?.total_xp?.toLocaleString() || '0'} disabled className="bg-secondary/50" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Study Preferences */}
-      <Card className="glass-card">
-        <CardHeader className="flex flex-row items-center gap-4 pb-2">
-          <div className="bg-accent/20 p-3 rounded-full">
-            <Target className="h-6 w-6 text-accent" />
-          </div>
-          <CardTitle className="text-xl">Study Preferences</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* JLPT Target Level */}
-          <div className="space-y-3">
-            <label className="text-sm font-medium">Target JLPT Level</label>
-            <div className="flex flex-wrap gap-2">
-              {JLPT_LEVELS.map((level) => (
-                <button
-                  key={level.value}
-                  onClick={() => setCurrentLevel(level.value)}
-                  className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                    displayLevel === level.value
-                      ? 'bg-primary text-primary-foreground shadow-md'
-                      : 'bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary'
-                  }`}
-                >
-                  {level.label}
-                </button>
-              ))}
+        {/* Study Preferences */}
+        <Card className="glass-card rounded-3xl overflow-hidden border-border/60">
+          <CardHeader className="flex flex-row items-center gap-4 pb-2 border-b border-border/40">
+            <div className="bg-accent/20 p-3 rounded-2xl text-accent border border-accent/30">
+              <Target className="h-6 w-6" />
             </div>
-          </div>
-
-          {/* Daily Goal */}
-          <div className="space-y-3">
-            <label className="text-sm font-medium flex items-center gap-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              Daily Study Goal
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {DAILY_GOALS.map((goal) => (
-                <button
-                  key={goal}
-                  onClick={() => setDailyGoal(goal)}
-                  className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                    displayGoal === goal
-                      ? 'bg-primary text-primary-foreground shadow-md'
-                      : 'bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary'
-                  }`}
-                >
-                  {goal} min
-                </button>
-              ))}
+            <CardTitle className="text-xl font-extrabold">Study Preferences</CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 space-y-6">
+            {/* JLPT Target Level */}
+            <div className="space-y-3">
+              <label className="text-sm font-bold text-foreground">Target JLPT Level</label>
+              <div className="flex flex-wrap gap-2">
+                {JLPT_LEVELS.map((level) => (
+                  <button
+                    key={level.value}
+                    onClick={() => setCurrentLevel(level.value)}
+                    className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all duration-200 ${
+                      displayLevel === level.value
+                        ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105'
+                        : 'bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary'
+                    }`}
+                  >
+                    {level.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Save Button */}
-          <div className="flex items-center gap-4 pt-4 border-t border-border/50">
-            <Button
-              variant="premium"
-              onClick={handleSave}
-              disabled={!hasChanges || updateMutation.isPending}
-              className="gap-2"
-            >
-              {updateMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : saved ? (
-                <Check className="h-4 w-4" />
-              ) : (
-                <Settings className="h-4 w-4" />
+            {/* Daily Goal */}
+            <div className="space-y-3">
+              <label className="text-sm font-bold text-foreground flex items-center gap-2">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                Daily Study Goal
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {DAILY_GOALS.map((goal) => (
+                  <button
+                    key={goal}
+                    onClick={() => setDailyGoal(goal)}
+                    className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all duration-200 ${
+                      displayGoal === goal
+                        ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105'
+                        : 'bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary'
+                    }`}
+                  >
+                    {goal} min
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Save Button */}
+            <div className="flex items-center gap-4 pt-4 border-t border-border/50">
+              <Button
+                variant="premium"
+                onClick={handleSave}
+                disabled={!hasChanges || updateMutation.isPending}
+                className="gap-2 rounded-2xl font-bold shadow-md px-6"
+              >
+                {updateMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : saved ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <Settings className="h-4 w-4" />
+                )}
+                {saved ? 'Saved!' : 'Save Changes'}
+              </Button>
+              {updateMutation.isError && (
+                <p className="text-sm text-destructive font-semibold">Failed to save. Please try again.</p>
               )}
-              {saved ? 'Saved!' : 'Save Changes'}
-            </Button>
-            {updateMutation.isError && (
-              <p className="text-sm text-destructive">Failed to save. Please try again.</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Security */}
-      <Card className="glass-card">
-        <CardHeader className="flex flex-row items-center gap-4 pb-2">
-          <div className="bg-blue-500/20 p-3 rounded-full">
-            <Shield className="h-6 w-6 text-blue-500" />
-          </div>
-          <CardTitle className="text-xl">Security</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground text-sm mb-4">
-            Password change and account management features are coming soon.
-          </p>
-          <Button variant="outline" disabled className="opacity-50">
-            Change Password
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+        {/* Security */}
+        <Card className="glass-card rounded-3xl overflow-hidden border-border/60">
+          <CardHeader className="flex flex-row items-center gap-4 pb-2 border-b border-border/40">
+            <div className="bg-fuji-ice/20 p-3 rounded-2xl text-fuji-ice border border-fuji-ice/30">
+              <Shield className="h-6 w-6" />
+            </div>
+            <CardTitle className="text-xl font-extrabold">Security</CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <p className="text-muted-foreground text-sm mb-4">
+              Password change and account deletion features are protected via HttpOnly session security.
+            </p>
+            <Button variant="outline" disabled className="opacity-50 rounded-xl font-bold">
+              Change Password (Protected)
+            </Button>
+          </CardContent>
+        </Card>
+      </GSAPReveal>
+    </GSAPReveal>
   );
 }
