@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/useAuthStore';
+import { motion } from 'framer-motion';
 import { speakJapanese } from '@/lib/tts';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -115,18 +116,27 @@ export default function VocabularyExplorer() {
 
       {/* Level Selector & Info Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex gap-2 p-1.5 bg-card/80 backdrop-blur-2xl rounded-2xl border border-border/60 shadow-lg">
-          {LEVELS.map((l) => (
+        {/* JLPT Level Selector */}
+        <div className="inline-flex bg-background/50 backdrop-blur-md p-1.5 rounded-2xl shadow-sm border border-border overflow-hidden relative">
+          {['n5', 'n4', 'n3', 'n2', 'n1'].map((l) => (
             <button
               key={l}
               onClick={() => handleLevelChange(l)}
-              className={`px-6 py-2.5 rounded-xl text-xs sm:text-sm font-black uppercase transition-all duration-300 ${
+              className={`relative px-6 py-2.5 rounded-xl text-xs sm:text-sm font-black uppercase transition-colors duration-300 ${
                 level === l 
-                  ? 'bg-gradient-to-r from-primary to-tokyo-gold text-white shadow-lg shadow-primary/25 scale-105' 
-                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                  ? 'text-primary-foreground' 
+                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
               }`}
             >
-              {l}
+              {level === l && (
+                <motion.div
+                  layoutId="activeTabIndicator-vocab"
+                  className="absolute inset-0 bg-primary shadow-md rounded-xl"
+                  initial={false}
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10">{l}</span>
             </button>
           ))}
         </div>

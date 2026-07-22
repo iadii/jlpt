@@ -1,26 +1,24 @@
-/**
- * Web Speech API helper for native Japanese Text-To-Speech (TTS).
- */
+import { API_BASE_URL } from './api';
 
-export const speakJapanese = (text: string, rate = 0.85) => {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-    console.warn('Web Speech API is not supported in this environment.');
+let currentAudio: HTMLAudioElement | null = null;
+
+export const speakJapanese = (text: string, rate = 1.0) => {
+  if (typeof window === 'undefined') {
     return;
   }
 
-  // Cancel any ongoing speech
-  window.speechSynthesis.cancel();
-
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'ja-JP';
-  utterance.rate = rate; // Slightly slower for clear language learning
-
-  // Attempt to select a native Japanese voice if available
-  const voices = window.speechSynthesis.getVoices();
-  const jaVoice = voices.find((v) => v.lang.includes('ja') || v.lang.includes('JP'));
-  if (jaVoice) {
-    utterance.voice = jaVoice;
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
   }
 
-  window.speechSynthesis.speak(utterance);
+  
+  const url = `${API_BASE_URL}/shared/tts/?text=${encodeURIComponent(text)}`;
+  
+  currentAudio = new Audio(url);
+  currentAudio.playbackRate = rate; 
+  
+  currentAudio.play().catch((err) => {
+    console.error('Failed to play backend TTS audio:', err);
+  });
 };

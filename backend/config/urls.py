@@ -23,6 +23,7 @@ urlpatterns = [
         path('sessions/', include('sessions.urls')),
         path('streaks/', include('streaks.urls')),
         path('leaderboard/', include(leaderboard_urlpatterns)),
+        path('shared/', include('shared.urls')),
     ])),
 ]
 
