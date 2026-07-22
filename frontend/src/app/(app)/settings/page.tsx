@@ -100,41 +100,7 @@ export default function SettingsPage() {
       </div>
 
       <GSAPReveal staggerChildren delay={0.1} className="space-y-6">
-        {/* Profile Overview */}
-        <Card className="glass-card rounded-2xl overflow-hidden border-border/60">
-          <CardHeader className="flex flex-row items-center gap-4 pb-2 border-b border-border/40">
-            <div className="bg-primary/10 p-3 rounded-xl text-primary border border-primary/20">
-              <UserIcon className="h-6 w-6" />
-            </div>
-            <CardTitle className="text-xl font-semibold">Profile Overview</CardTitle>
-          </CardHeader>
-          <CardContent className="p-6 space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Username</label>
-                <Input value={profile?.username || user?.username || ''} disabled className="bg-secondary/40 font-semibold rounded-xl" />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Email</label>
-                <Input value={profile?.email || ''} disabled className="bg-secondary/40 font-semibold rounded-xl" />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Member Since</label>
-                <Input
-                  value={profile?.date_joined ? new Date(profile.date_joined).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}
-                  disabled
-                  className="bg-secondary/40 font-semibold rounded-xl"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total XP</label>
-                <Input value={profile?.total_xp?.toLocaleString() || '0'} disabled className="bg-secondary/40 font-semibold rounded-xl text-primary" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Profile Overview moved to /profile */}
 
         {/* Study Preferences */}
         <Card className="glass-card rounded-2xl overflow-hidden border-border/60">
@@ -146,9 +112,9 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="p-6 space-y-6">
             {/* JLPT Target Level */}
-            <div className="space-y-3">
+            <div className="space-y-4">
               <label className="text-sm font-semibold text-foreground">Target JLPT Level</label>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-3">
                 {JLPT_LEVELS.map((level) => (
                   <button
                     key={level.value}
@@ -166,12 +132,12 @@ export default function SettingsPage() {
             </div>
 
             {/* Daily Goal */}
-            <div className="space-y-3">
+            <div className="space-y-4 pt-2">
               <label className="text-sm font-semibold text-foreground flex items-center gap-2">
                 <ClockIcon className="h-4 w-4 text-muted-foreground" />
                 Daily Study Goal
               </label>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-3">
                 {DAILY_GOALS.map((goal) => (
                   <button
                     key={goal}

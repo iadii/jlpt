@@ -65,10 +65,27 @@ class ProfileService:
 
     @staticmethod
     def update_profile(user, **kwargs):
-        """Update profile fields and return the updated profile."""
+        """Update profile and user fields and return the updated profile."""
+        from django.db import IntegrityError
+        
         profile = user.profile
+        
+        user_fields = ['username', 'email']
+        user_needs_save = False
+        
+        for field in user_fields:
+            if field in kwargs and kwargs[field] is not None:
+                setattr(user, field, kwargs[field])
+                user_needs_save = True
+                
+        if user_needs_save:
+            try:
+                user.save()
+            except IntegrityError:
+                raise ServiceException("Username or email is already in use by another account.")
+
         for field, value in kwargs.items():
-            if hasattr(profile, field) and value is not None:
+            if field not in user_fields and hasattr(profile, field) and value is not None:
                 setattr(profile, field, value)
         profile.save()
         return profile

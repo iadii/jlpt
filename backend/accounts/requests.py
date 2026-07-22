@@ -20,6 +20,8 @@ class LoginRequest(serializers.Serializer):
 
 class ProfileUpdateRequest(serializers.Serializer):
     """PUT /api/users/profile/update/"""
+    username = serializers.CharField(min_length=3, max_length=150, required=False)
+    email = serializers.EmailField(required=False)
     current_level = serializers.ChoiceField(
         choices=['n5', 'n4', 'n3', 'n2', 'n1'], required=False
     )

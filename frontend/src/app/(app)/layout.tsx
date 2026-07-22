@@ -66,7 +66,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "relative group flex items-center justify-center h-12 w-12 sm:h-14 sm:w-14 rounded-full transition-all duration-300",
+                  "relative group flex items-center justify-center h-12 w-12 sm:h-14 sm:w-14 rounded-full transition-all duration-300 outline-none focus:outline-none",
                   isActive
                     ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30"
                     : "text-muted-foreground hover:bg-white/50 hover:text-foreground"
@@ -86,13 +86,21 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="w-px h-8 bg-border mx-2" />
 
           {/* User Profile Tooltip/Button */}
-          <div className="relative group flex items-center justify-center h-12 w-12 sm:h-14 sm:w-14 rounded-full transition-all duration-300 text-muted-foreground hover:bg-white/50 hover:text-foreground cursor-default">
+          <Link
+            href="/profile"
+            className={cn(
+              "relative group flex items-center justify-center h-12 w-12 sm:h-14 sm:w-14 rounded-full transition-all duration-300 outline-none focus:outline-none",
+              pathname === '/profile'
+                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30"
+                : "text-muted-foreground hover:bg-white/50 hover:text-foreground"
+            )}
+          >
             <UserCircleIcon className="h-6 w-6 sm:h-7 sm:w-7 transition-transform duration-300" />
             <span className="absolute -top-10 opacity-0 group-hover:opacity-100 group-hover:-translate-y-2 transition-all duration-300 bg-foreground text-background text-xs font-bold px-3 py-1.5 rounded-lg pointer-events-none whitespace-nowrap shadow-xl">
-              {user?.username || 'Student'}
+              {user?.username || 'Profile'}
               <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-foreground" />
             </span>
-          </div>
+          </Link>
 
           {/* Logout */}
           <button
@@ -100,7 +108,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               logout();
               router.push('/login');
             }}
-            className="relative group flex items-center justify-center h-12 w-12 sm:h-14 sm:w-14 rounded-full transition-all duration-300 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+            className="relative group flex items-center justify-center h-12 w-12 sm:h-14 sm:w-14 rounded-full transition-all duration-300 text-muted-foreground hover:bg-destructive/10 hover:text-destructive outline-none focus:outline-none"
           >
             <ArrowRightOnRectangleIcon className="h-6 w-6 sm:h-7 sm:w-7 transition-transform duration-300" />
             <span className="absolute -top-10 opacity-0 group-hover:opacity-100 group-hover:-translate-y-2 transition-all duration-300 bg-destructive text-destructive-foreground text-xs font-bold px-3 py-1.5 rounded-lg pointer-events-none whitespace-nowrap shadow-xl">

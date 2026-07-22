@@ -29,7 +29,7 @@ export default function LearnPage() {
   }, []);
 
   return (
-    <div ref={containerRef} className="space-y-10 max-w-6xl mx-auto pb-16">
+    <div ref={containerRef} className="space-y-10 max-w-7xl mx-auto pb-32 px-4 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="text-center space-y-4 py-4 gsap-stagger-item">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-black uppercase tracking-widest mx-auto">
@@ -42,7 +42,7 @@ export default function LearnPage() {
       </div>
 
       {/* Curriculum Track Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Vocabulary Track */}
         <div className="gsap-stagger-item enterprise-card p-8 relative overflow-hidden group flex flex-col justify-between">
           <div className="space-y-4 relative z-10">
@@ -100,8 +100,8 @@ export default function LearnPage() {
         </div>
 
         {/* Grammar Track */}
-        <div className="gsap-stagger-item enterprise-card p-8 relative overflow-hidden group md:col-span-2 flex flex-col justify-between">
-          <div className="space-y-4 relative z-10 max-w-3xl">
+        <div className="gsap-stagger-item enterprise-card p-8 relative overflow-hidden group flex flex-col justify-between">
+          <div className="space-y-4 relative z-10">
             <div className="flex items-center justify-between">
               <div className="bg-emerald-50 p-4 rounded-xl text-emerald-500 border border-emerald-100 transition-transform">
                 <FireIcon className="h-8 w-8" />
