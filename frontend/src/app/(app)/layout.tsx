@@ -4,12 +4,18 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { BookOpen, Home, Trophy, LogOut, Settings, Sparkles } from 'lucide-react';
+import { 
+  HomeIcon, 
+  BookOpenIcon, 
+  TrophyIcon, 
+  Cog6ToothIcon, 
+  ArrowRightOnRectangleIcon, 
+  UserCircleIcon 
+} from '@heroicons/react/24/outline';
 import { cn } from '@/lib/utils';
-import { SakuraBackground } from '@/components/ui/SakuraBackground';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, logout, _hasHydrated } = useAuthStore();
+  const { user, isAuthenticated, logout, _hasHydrated } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -22,82 +28,89 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (!_hasHydrated || !isAuthenticated) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <span className="text-sm font-medium text-muted-foreground animate-pulse">Loading...</span>
+        </div>
       </div>
     );
   }
 
   const navItems = [
-    { name: 'Dashboard', href: '/dashboard', icon: Home },
-    { name: 'Learn', href: '/learn', icon: BookOpen },
-    { name: 'Leaderboard', href: '/leaderboard', icon: Trophy },
-    { name: 'Settings', href: '/settings', icon: Settings },
+    { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
+    { name: 'Learn', href: '/learn', icon: BookOpenIcon },
+    { name: 'Leaderboard', href: '/leaderboard', icon: TrophyIcon },
+    { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
   ];
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background relative">
-      {/* Dynamic Floating Sakura Petals */}
-      <SakuraBackground />
-
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-border/70 bg-card/60 backdrop-blur-xl flex flex-col z-10 shadow-2xl">
-        <div className="p-6 border-b border-border/50">
-          <Link href="/dashboard" className="flex items-center gap-3 group">
-            <span className="text-3xl group-hover:scale-110 transition-transform">🎌</span>
-            <div>
-              <span className="text-xl font-black tracking-wider bg-gradient-to-r from-primary via-tokyo-pink to-accent bg-clip-text text-transparent">
-                JLPT Sensei
-              </span>
-              <span className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1">
-                <Sparkles className="h-2.5 w-2.5 text-primary" />
-                Mount Fuji & Tokyo
-              </span>
-            </div>
-          </Link>
+    <div className="flex flex-col h-screen overflow-hidden bg-background relative selection:bg-primary/30 selection:text-primary">
+      {/* Main Content Area */}
+      <main className="flex-1 overflow-y-auto bg-background relative z-10 flex flex-col items-center pb-32">
+        <div className="w-full max-w-6xl px-6 py-8 lg:px-10 lg:py-12 flex-1">
+          {children}
         </div>
-        
-        <nav className="flex-1 overflow-y-auto p-4 space-y-2">
+      </main>
+
+      {/* Floating Dock Navigation */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4">
+        <nav className="glass-nav flex items-center p-2 gap-2 shadow-[0_8px_32px_rgba(0,0,0,0.08)]">
+          
+          {/* Main Links */}
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href || (item.href === '/learn' && pathname.startsWith('/learn'));
+            
             return (
               <Link
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200",
-                  isActive 
-                    ? "bg-gradient-to-r from-primary/15 to-tokyo-pink/10 text-primary border border-primary/20 shadow-md translate-x-1" 
-                    : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+                  "relative group flex items-center justify-center h-12 w-12 sm:h-14 sm:w-14 rounded-full transition-all duration-300",
+                  isActive
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30"
+                    : "text-muted-foreground hover:bg-white/50 hover:text-foreground"
                 )}
               >
-                <Icon className={cn("h-5 w-5", isActive ? "text-primary" : "text-muted-foreground")} />
-                {item.name}
+                <Icon className="h-6 w-6 sm:h-7 sm:w-7 transition-transform duration-300" />
+                
+                {/* Tooltip */}
+                <span className="absolute -top-10 opacity-0 group-hover:opacity-100 group-hover:-translate-y-2 transition-all duration-300 bg-foreground text-background text-xs font-bold px-3 py-1.5 rounded-lg pointer-events-none whitespace-nowrap shadow-xl">
+                  {item.name}
+                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-foreground" />
+                </span>
               </Link>
             )
           })}
-        </nav>
 
-        <div className="p-4 border-t border-border/50">
+          <div className="w-px h-8 bg-border mx-2" />
+
+          {/* User Profile Tooltip/Button */}
+          <div className="relative group flex items-center justify-center h-12 w-12 sm:h-14 sm:w-14 rounded-full transition-all duration-300 text-muted-foreground hover:bg-white/50 hover:text-foreground cursor-default">
+            <UserCircleIcon className="h-6 w-6 sm:h-7 sm:w-7 transition-transform duration-300" />
+            <span className="absolute -top-10 opacity-0 group-hover:opacity-100 group-hover:-translate-y-2 transition-all duration-300 bg-foreground text-background text-xs font-bold px-3 py-1.5 rounded-lg pointer-events-none whitespace-nowrap shadow-xl">
+              {user?.username || 'Student'}
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-foreground" />
+            </span>
+          </div>
+
+          {/* Logout */}
           <button
             onClick={() => {
               logout();
               router.push('/login');
             }}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-destructive w-full hover:bg-destructive/10 transition-colors"
+            className="relative group flex items-center justify-center h-12 w-12 sm:h-14 sm:w-14 rounded-full transition-all duration-300 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
           >
-            <LogOut className="h-5 w-5" />
-            Logout
+            <ArrowRightOnRectangleIcon className="h-6 w-6 sm:h-7 sm:w-7 transition-transform duration-300" />
+            <span className="absolute -top-10 opacity-0 group-hover:opacity-100 group-hover:-translate-y-2 transition-all duration-300 bg-destructive text-destructive-foreground text-xs font-bold px-3 py-1.5 rounded-lg pointer-events-none whitespace-nowrap shadow-xl">
+              Sign Out
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-destructive" />
+            </span>
           </button>
-        </div>
-      </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col overflow-hidden relative z-10">
-        <div className="flex-1 overflow-y-auto p-8">
-          {children}
-        </div>
-      </main>
+        </nav>
+      </div>
     </div>
   );
 }

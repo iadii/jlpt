@@ -7,8 +7,9 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { speakJapanese } from '@/lib/tts';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, Volume2, Eye, X, Layers } from 'lucide-react';
+import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, ArrowPathIcon, SpeakerWaveIcon, EyeIcon, XMarkIcon, Square3Stack3DIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { GSAPReveal } from '@/components/ui/GSAPReveal';
 
 interface KanjiItem {
   id: number;
@@ -97,32 +98,32 @@ export default function KanjiExplorer() {
   const endItem = startItem + kanjiList.length - 1;
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-6xl mx-auto pb-12">
+    <GSAPReveal className="space-y-8 max-w-7xl mx-auto pb-16">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Link href="/learn">
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <ArrowLeft className="h-5 w-5" />
+            <Button variant="ghost" size="icon" className="rounded-2xl hover:bg-secondary">
+              <ArrowLeftIcon className="h-5 w-5" />
             </Button>
           </Link>
           <div>
-            <h1 className="h1-premium text-3xl">Kanji Explorer</h1>
-            <p className="text-muted-foreground">Master character readings, stroke order, and meanings across JLPT N5–N1.</p>
+            <h1 className="h1-premium text-3xl sm:text-4xl">Kanji Explorer</h1>
+            <p className="text-muted-foreground text-sm sm:text-base font-medium">Master character readings, stroke order, and meanings across JLPT N5–N1.</p>
           </div>
         </div>
       </div>
 
       {/* Level Selector & Info Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex gap-2 p-1 bg-secondary/50 rounded-xl w-fit">
+        <div className="flex gap-2 p-1.5 bg-card/80 backdrop-blur-2xl rounded-2xl border border-border/60 shadow-lg">
           {LEVELS.map((l) => (
             <button
               key={l}
               onClick={() => handleLevelChange(l)}
-              className={`px-6 py-2 rounded-lg text-sm font-bold uppercase transition-all ${
+              className={`px-6 py-2.5 rounded-xl text-xs sm:text-sm font-black uppercase transition-all duration-300 ${
                 level === l 
-                  ? 'bg-accent text-accent-foreground shadow-md' 
+                  ? 'bg-gradient-to-r from-fuji-ice to-accent text-white shadow-lg shadow-fuji-ice/25 scale-105' 
                   : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
               }`}
             >
@@ -133,38 +134,35 @@ export default function KanjiExplorer() {
 
         {/* Page status pill */}
         {!isLoading && !isError && kanjiList.length > 0 && (
-          <div className="text-sm font-medium text-muted-foreground bg-secondary/30 px-4 py-2 rounded-lg border border-border/40">
-            Showing <span className="text-foreground font-bold">{startItem}–{endItem}</span> characters (Page {pageNumber})
+          <div className="text-xs sm:text-sm font-extrabold text-muted-foreground bg-card/80 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-border/60 shadow-sm flex items-center gap-2">
+            
+            Showing <span className="text-fuji-ice font-black">{startItem}–{endItem}</span> characters (Page {pageNumber})
           </div>
         )}
       </div>
 
       {/* Content Grid */}
       {isLoading || isFetching ? (
-        <div className="flex justify-center p-16">
-          <Loader2 className="h-8 w-8 animate-spin text-accent" />
+        <div className="flex justify-center p-20">
+          <ArrowPathIcon className="h-10 w-10 animate-spin text-fuji-ice" />
         </div>
       ) : isError ? (
-        <div className="text-center text-destructive p-8 bg-destructive/10 rounded-xl">
-          <p className="font-medium">Failed to load Kanji characters.</p>
+        <div className="text-center text-destructive p-10 bg-destructive/10 rounded-3xl border border-destructive/20">
+          <p className="font-bold text-lg">Failed to load Kanji characters.</p>
           <p className="text-sm text-muted-foreground mt-1">
             {error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.'}
           </p>
         </div>
-      ) : kanjiList.length === 0 ? (
-        <div className="text-center p-12 bg-secondary/20 rounded-xl">
-          <p className="text-muted-foreground">No Kanji found for level {level.toUpperCase()}.</p>
-        </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <GSAPReveal key={`${level}-${pageNumber}`} staggerChildren delay={0.05} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {kanjiList.map((k) => (
-              <Card key={k.id} className="glass-card hover:border-accent/40 transition-all hover:-translate-y-1 relative group">
+              <Card key={k.id} className="enterprise-card rounded-3xl group border-fuji-ice/30">
                 <CardContent className="p-6 space-y-4">
-                  {/* Top Bar: Strokes + Audio + Stroke Order Inspection */}
+                  {/* Top Bar */}
                   <div className="flex justify-between items-center">
-                    <span className="text-xs font-semibold text-accent bg-accent/10 px-2.5 py-1 rounded-md flex items-center gap-1">
-                      <Layers className="h-3.5 w-3.5" />
+                    <span className="text-[11px] font-black text-fuji-ice bg-fuji-ice/15 px-3 py-1 rounded-xl uppercase tracking-wider flex items-center gap-1 border border-fuji-ice/20">
+                      <Square3Stack3DIcon className="h-3.5 w-3.5" />
                       {k.stroke_count} Strokes
                     </span>
 
@@ -174,51 +172,51 @@ export default function KanjiExplorer() {
                         size="icon"
                         onClick={() => setSelectedKanji(k)}
                         title="View Stroke Order Diagram"
-                        className="h-8 w-8 text-muted-foreground hover:text-accent hover:bg-accent/10 rounded-full transition-colors"
+                        className="h-9 w-9 text-muted-foreground hover:text-fuji-ice hover:bg-fuji-ice/15 rounded-full transition-colors"
                       >
-                        <Eye className="h-4 w-4" />
+                        <EyeIcon className="h-4 w-4" />
                       </Button>
                       <Button 
                         variant="ghost" 
                         size="icon" 
                         onClick={() => speakJapanese(k.character)}
                         title="Listen Pronunciation"
-                        className="h-8 w-8 text-muted-foreground hover:text-accent hover:bg-accent/10 rounded-full transition-colors"
+                        className="h-9 w-9 text-muted-foreground hover:text-fuji-ice hover:bg-fuji-ice/15 rounded-full transition-colors"
                       >
-                        <Volume2 className="h-4 w-4" />
+                        <SpeakerWaveIcon className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
 
                   {/* Character Display */}
-                  <div className="text-center py-3">
-                    <h2 className="text-6xl font-bold tracking-tight text-foreground group-hover:scale-105 transition-transform duration-300">
+                  <div className="text-center py-4 space-y-1">
+                    <h2 className="text-6xl font-black tracking-tight text-foreground transition-transform duration-300">
                       {k.character}
                     </h2>
-                    <p className="text-lg font-bold text-accent mt-2">
+                    <p className="text-base font-extrabold text-fuji-ice">
                       {k.meaning}
                     </p>
                   </div>
 
                   {/* Readings */}
-                  <div className="border-t border-border/50 pt-3 space-y-2 text-xs">
+                  <div className="border-t border-border/50 pt-3 space-y-1.5 text-xs font-semibold">
                     {k.onyomi && (
                       <div className="flex items-baseline gap-2">
-                        <span className="text-muted-foreground font-semibold uppercase text-[10px] w-12">Onyomi:</span>
-                        <span className="font-medium text-foreground">{k.onyomi}</span>
+                        <span className="text-muted-foreground uppercase text-[10px] w-14 font-black">Onyomi:</span>
+                        <span className="text-foreground">{k.onyomi}</span>
                       </div>
                     )}
                     {k.kunyomi && (
                       <div className="flex items-baseline gap-2">
-                        <span className="text-muted-foreground font-semibold uppercase text-[10px] w-12">Kunyomi:</span>
-                        <span className="font-medium text-foreground">{k.kunyomi}</span>
+                        <span className="text-muted-foreground uppercase text-[10px] w-14 font-black">Kunyomi:</span>
+                        <span className="text-foreground">{k.kunyomi}</span>
                       </div>
                     )}
                   </div>
                 </CardContent>
               </Card>
             ))}
-          </div>
+          </GSAPReveal>
 
           {/* Pagination Controls */}
           <div className="flex items-center justify-between pt-8 border-t border-border/40">
@@ -226,15 +224,15 @@ export default function KanjiExplorer() {
               variant="outline"
               onClick={handlePrevPage}
               disabled={pageNumber <= 1 || isFetching}
-              className="gap-2 rounded-xl"
+              className="gap-2 rounded-2xl font-bold px-6 py-5 shadow-sm"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeftIcon className="h-4 w-4" />
               Previous
             </Button>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-muted-foreground">
-                Page <span className="text-foreground font-bold">{pageNumber}</span>
+              <span className="text-sm font-bold text-muted-foreground">
+                Page <span className="text-fuji-ice font-black text-lg">{pageNumber}</span>
               </span>
             </div>
 
@@ -242,81 +240,75 @@ export default function KanjiExplorer() {
               variant="outline"
               onClick={handleNextPage}
               disabled={!data?.next || isFetching}
-              className="gap-2 rounded-xl"
+              className="gap-2 rounded-2xl font-bold px-6 py-5 shadow-sm"
             >
               Next
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRightIcon className="h-4 w-4" />
             </Button>
           </div>
         </>
       )}
 
-      {/* Kanji Stroke Order Visualization Modal */}
+      {/* Kanji Stroke Order Modal */}
       {selectedKanji && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-md p-4 animate-in fade-in">
-          <div className="glass-card max-w-md w-full p-6 space-y-6 relative border-accent/40 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-xl p-4 animate-in fade-in">
+          <div className="enterprise-card max-w-md w-full p-8 space-y-6 relative border-fuji-ice/50 shadow-2xl rounded-3xl">
             <button
               onClick={() => setSelectedKanji(null)}
-              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground p-1 rounded-full hover:bg-secondary transition-colors"
+              className="absolute top-5 right-5 text-muted-foreground hover:text-foreground p-2 rounded-2xl hover:bg-secondary transition-colors"
             >
-              <X className="h-5 w-5" />
+              <XMarkIcon className="h-5 w-5" />
             </button>
 
             <div className="text-center space-y-2">
-              <span className="text-xs uppercase tracking-wider font-bold text-accent bg-accent/10 px-3 py-1 rounded-full">
+              <span className="text-xs uppercase tracking-widest font-black text-fuji-ice bg-fuji-ice/15 px-3.5 py-1 rounded-full border border-fuji-ice/20">
                 {selectedKanji.jlpt_level.toUpperCase()} Kanji • {selectedKanji.stroke_count} Strokes
               </span>
-              <h3 className="text-7xl font-bold pt-2">{selectedKanji.character}</h3>
-              <p className="text-xl font-medium text-accent">{selectedKanji.meaning}</p>
+              <h3 className="text-7xl font-black pt-2 text-foreground">{selectedKanji.character}</h3>
+              <p className="text-xl font-extrabold text-fuji-ice">{selectedKanji.meaning}</p>
             </div>
 
             {/* SVG Stroke Order Animation Canvas */}
-            <div className="bg-secondary/40 rounded-2xl p-6 flex flex-col items-center justify-center border border-border/50 space-y-4">
-              <div className="w-44 h-44 relative bg-background/80 rounded-xl border border-accent/30 flex items-center justify-center shadow-inner">
-                {/* SVG Stroke Order Display Grid */}
-                <svg viewBox="0 0 100 100" className="w-36 h-36 stroke-accent fill-none stroke-[4] stroke-linecap-round stroke-linejoin-round">
-                  {/* Guideline Grid */}
+            <div className="bg-secondary/50 rounded-2xl p-6 flex flex-col items-center justify-center border border-border/60 space-y-3">
+              <div className="w-44 h-44 relative bg-card rounded-2xl border border-fuji-ice/40 flex items-center justify-center shadow-inner">
+                <svg viewBox="0 0 100 100" className="w-36 h-36 stroke-fuji-ice fill-none stroke-[4] stroke-linecap-round stroke-linejoin-round">
                   <line x1="0" y1="50" x2="100" y2="50" stroke="currentColor" strokeWidth="0.5" strokeDasharray="3 3" opacity="0.3" />
                   <line x1="50" y1="0" x2="50" y2="100" stroke="currentColor" strokeWidth="0.5" strokeDasharray="3 3" opacity="0.3" />
-                  {/* Render Character */}
                   <text
                     x="50"
                     y="72"
                     textAnchor="middle"
-                    className="fill-foreground stroke-none font-bold text-[70px] select-none"
+                    className="fill-foreground stroke-none font-black text-[70px] select-none"
                   >
                     {selectedKanji.character}
                   </text>
                 </svg>
               </div>
-              <p className="text-xs text-muted-foreground font-medium">Stroke order diagram preview</p>
+              <p className="text-xs text-muted-foreground font-extrabold">Stroke order diagram preview</p>
             </div>
 
-            {/* Readings inside Modal */}
-            <div className="grid grid-cols-2 gap-3 text-sm bg-secondary/20 p-4 rounded-xl">
+            <div className="grid grid-cols-2 gap-3 text-sm bg-secondary/40 p-4 rounded-2xl border border-border/50">
               <div>
-                <p className="text-xs text-muted-foreground font-semibold uppercase">Onyomi</p>
-                <p className="font-bold text-foreground mt-0.5">{selectedKanji.onyomi || '—'}</p>
+                <p className="text-[10px] text-muted-foreground font-black uppercase">Onyomi</p>
+                <p className="font-extrabold text-foreground mt-0.5">{selectedKanji.onyomi || '—'}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground font-semibold uppercase">Kunyomi</p>
-                <p className="font-bold text-foreground mt-0.5">{selectedKanji.kunyomi || '—'}</p>
+                <p className="text-[10px] text-muted-foreground font-black uppercase">Kunyomi</p>
+                <p className="font-extrabold text-foreground mt-0.5">{selectedKanji.kunyomi || '—'}</p>
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2">
-              <Button 
-                variant="premium" 
-                onClick={() => speakJapanese(selectedKanji.character)} 
-                className="w-full gap-2"
-              >
-                <Volume2 className="h-4 w-4" />
-                Listen Pronunciation
-              </Button>
-            </div>
+            <Button 
+              variant="premium" 
+              onClick={() => speakJapanese(selectedKanji.character)} 
+              className="w-full gap-2 rounded-2xl font-bold py-6"
+            >
+              <SpeakerWaveIcon className="h-5 w-5" />
+              Listen Pronunciation
+            </Button>
           </div>
         </div>
       )}
-    </div>
+    </GSAPReveal>
   );
 }

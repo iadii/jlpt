@@ -7,7 +7,7 @@ import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Lock, Mail, User, Eye, EyeOff } from 'lucide-react';
+import { LockClosedIcon, EnvelopeIcon, UserIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
 export default function RegisterPage() {
@@ -55,7 +55,7 @@ export default function RegisterPage() {
           <form onSubmit={handleRegister} className="space-y-4">
             <div className="space-y-2">
               <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <UserIcon className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                 <Input 
                   type="text" 
                   placeholder="Username" 
@@ -68,7 +68,7 @@ export default function RegisterPage() {
             </div>
             <div className="space-y-2">
               <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <EnvelopeIcon className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                 <Input 
                   type="email" 
                   placeholder="Email address" 
@@ -81,7 +81,7 @@ export default function RegisterPage() {
             </div>
             <div className="space-y-2">
               <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <LockClosedIcon className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                 <Input 
                   type={showPassword ? "text" : "password"} 
                   placeholder="Password (min 8 chars)" 
@@ -95,7 +95,7 @@ export default function RegisterPage() {
                   className="absolute right-3 top-3 text-muted-foreground hover:text-primary transition-colors"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
                 </button>
               </div>
             </div>

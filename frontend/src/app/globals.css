@@ -5,71 +5,71 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Mount Fuji & Tokyo Daytime Palette (Pastel & Crisp) */
-  --background: #f4f6fa;
-  --foreground: #0f172a;
-  
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  
-  --primary: #e63946; /* Japanese Torii Crimson */
-  --primary-foreground: #ffffff;
-  
-  --secondary: #e2e8f0;
-  --secondary-foreground: #1e293b;
-  
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  
-  --accent: #415a77; /* Mount Fuji Indigo Blue */
-  --accent-foreground: #ffffff;
+  /* Washi Paper & Pastel Japanese Enterprise Palette */
+  --background: #EAF5F0; /* Soft pastel matcha tint */
+  --foreground: #1E293B; /* Elegant slate for text */
 
-  --sakura: #ffb5a7; /* Pastel Sakura */
-  --matcha: #80ed99; /* Pastel Matcha */
-  --tokyo-pink: #ff0054; /* Tokyo Neon Pink */
-  --fuji-ice: #778da9; /* Fuji Mist */
-  
-  --destructive: #ef4444;
+  --card: rgba(255, 255, 255, 0.7);
+  --card-foreground: #1E293B;
+
+  --primary: #8CD7AE; /* Pastel Matcha Green */
+  --primary-foreground: #1E293B;
+
+  --secondary: #F1F5F9;
+  --secondary-foreground: #475569;
+
+  --muted: #F8FAFC;
+  --muted-foreground: #64748B;
+
+  --accent: #FFB5A7; /* Sakura Pink */
+  --accent-foreground: #1E293B;
+
+  --sakura: #FFB5A7;
+  --matcha: #8CD7AE;
+  --tokyo-gold: #FCE68E; /* Softer Gold */
+  --fuji-ice: #A7DBFA; /* Softer Fuji Ice */
+
+  --destructive: #FCA5A5;
   --destructive-foreground: #ffffff;
-  
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #e63946;
-  
-  --radius: 1rem;
+
+  --border: #E2E8F0;
+  --input: #E2E8F0;
+  --ring: #8CD7AE;
+
+  --radius: 1.25rem;
 }
 
 .dark {
-  /* Mount Fuji Dusk & Tokyo Cyber Night Palette */
-  --background: #0b132b; /* Deep Fuji Night */
-  --foreground: #f8fafc;
-  
-  --card: #1c2541; /* Fuji Indigo Card */
-  --card-foreground: #f8fafc;
-  
-  --primary: #ff0054; /* Tokyo Neon Sakura */
-  --primary-foreground: #ffffff;
-  
-  --secondary: #1e293b;
-  --secondary-foreground: #f8fafc;
-  
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-  
-  --accent: #3a506b; /* Fuji Deep Mist */
-  --accent-foreground: #ffffff;
+  /* Elegant Dark Mode with Pastel Accents */
+  --background: #0F172A;
+  --foreground: #F8FAFC;
 
-  --sakura: #ff758f;
-  --matcha: #52b788;
-  --tokyo-pink: #ff0054;
-  --fuji-ice: #5bc0be;
-  
-  --destructive: #991b1b;
-  --destructive-foreground: #f8fafc;
-  
-  --border: #1e293b;
-  --input: #1e293b;
-  --ring: #ff0054;
+  --card: rgba(30, 41, 59, 0.7);
+  --card-foreground: #F8FAFC;
+
+  --primary: #8CD7AE;
+  --primary-foreground: #0F172A;
+
+  --secondary: #334155;
+  --secondary-foreground: #F8FAFC;
+
+  --muted: #1E293B;
+  --muted-foreground: #94A3B8;
+
+  --accent: #FFB5A7;
+  --accent-foreground: #0F172A;
+
+  --sakura: #FFB5A7;
+  --matcha: #8CD7AE;
+  --tokyo-gold: #FCE68E;
+  --fuji-ice: #A7DBFA;
+
+  --destructive: #FCA5A5;
+  --destructive-foreground: #0F172A;
+
+  --border: #334155;
+  --input: #334155;
+  --ring: #8CD7AE;
 }
 
 @theme inline {
@@ -87,18 +87,18 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-sakura: var(--sakura);
   --color-matcha: var(--matcha);
-  --color-tokyo-pink: var(--tokyo-pink);
+  --color-tokyo-gold: var(--tokyo-gold);
   --color-fuji-ice: var(--fuji-ice);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
-  
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-xl: var(--radius);
+  --radius-lg: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 8px);
+
   --font-sans: 'Inter', var(--font-geist-sans), sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
 }
@@ -107,40 +107,54 @@
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary min-h-screen relative overflow-x-hidden;
-    background-image: 
-      radial-gradient(circle at 15% 15%, rgba(230, 57, 70, 0.04) 0%, transparent 40%),
-      radial-gradient(circle at 85% 85%, rgba(65, 90, 119, 0.05) 0%, transparent 45%),
-      radial-gradient(circle at 50% 50%, rgba(255, 117, 143, 0.03) 0%, transparent 60%);
+    @apply text-foreground antialiased selection:bg-primary/30 selection:text-primary min-h-screen relative overflow-x-hidden;
+    /* Soft colorful animated background */
+    background: linear-gradient(135deg, var(--background) 0%, #D8EFDF 50%, var(--background) 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 15s ease infinite;
   }
 }
 
-/* Glassmorphism & Enterprise Japanese Aesthetic */
-.glass {
-  @apply bg-background/60 backdrop-blur-xl border border-border/50 shadow-sm;
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Glassmorphism & Enterprise Aesthetics */
+.glass-nav {
+  @apply bg-background/60 backdrop-blur-2xl border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-full;
 }
 
 .glass-card {
-  @apply bg-card/75 backdrop-blur-md border border-border/60 shadow-xl transition-all duration-300 hover:shadow-2xl hover:border-primary/40;
+  @apply bg-white/60 backdrop-blur-xl border-2 border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 rounded-3xl relative overflow-hidden;
+}
+
+.enterprise-card {
+  @apply bg-white/70 backdrop-blur-xl border-2 border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl transition-all duration-300;
+}
+
+.enterprise-card:hover {
+  @apply shadow-[0_20px_40px_rgb(0,0,0,0.08)] border-primary/30;
 }
 
 .glass-card-fuji {
-  background: linear-gradient(135deg, rgba(28, 37, 65, 0.85) 0%, rgba(11, 19, 43, 0.9) 100%);
-  @apply backdrop-blur-lg border border-fuji-ice/20 shadow-2xl;
+  @apply bg-gradient-to-br from-[#A7DBFA]/20 to-white/40 backdrop-blur-xl border-2 border-[#A7DBFA]/40 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl text-foreground;
 }
 
 .glass-card-sakura {
-  background: linear-gradient(135deg, rgba(255, 240, 243, 0.9) 0%, rgba(255, 229, 236, 0.7) 100%);
-  @apply backdrop-blur-md border border-sakura/30 shadow-lg dark:bg-gradient-to-br dark:from-pink-950/30 dark:to-slate-900/80;
+  @apply bg-gradient-to-br from-[#FFB5A7]/20 to-white/40 backdrop-blur-xl border-2 border-[#FFB5A7]/40 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl text-foreground;
 }
 
 /* Typography styles */
 .h1-premium {
-  @apply text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight bg-gradient-to-r from-primary via-fuji-ice to-foreground bg-clip-text text-transparent;
+  @apply text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground drop-shadow-sm;
 }
+
 .h2-premium {
-  @apply text-3xl md:text-4xl font-bold tracking-tight text-foreground;
+  @apply text-3xl md:text-4xl font-extrabold tracking-tight text-foreground drop-shadow-sm;
 }
 
 /* Custom Scrollbar */
@@ -148,9 +162,11 @@
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
-  @apply bg-muted-foreground/20 rounded-full hover:bg-primary/40 transition-colors;
+  @apply bg-primary/30 rounded-full hover:bg-primary/50 transition-colors;
 }

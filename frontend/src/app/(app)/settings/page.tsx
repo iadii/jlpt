@@ -7,7 +7,15 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Settings, User, Target, Clock, Shield, Loader2, Check, Sparkles } from 'lucide-react';
+import { 
+  Cog6ToothIcon, 
+  UserIcon, 
+  FlagIcon, 
+  ClockIcon, 
+  ShieldCheckIcon,
+  CheckIcon,
+  ArrowPathIcon
+} from '@heroicons/react/24/outline';
 import { GSAPReveal } from '@/components/ui/GSAPReveal';
 
 interface UserProfile {
@@ -76,7 +84,7 @@ export default function SettingsPage() {
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center p-16">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <ArrowPathIcon className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -85,7 +93,6 @@ export default function SettingsPage() {
     <GSAPReveal className="space-y-8 max-w-3xl mx-auto pb-12">
       <div>
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest mb-2">
-          <Sparkles className="h-3.5 w-3.5" />
           Account & Preferences
         </div>
         <h1 className="h1-premium text-3xl sm:text-4xl">Settings</h1>
@@ -94,12 +101,12 @@ export default function SettingsPage() {
 
       <GSAPReveal staggerChildren delay={0.1} className="space-y-6">
         {/* Profile Overview */}
-        <Card className="glass-card rounded-3xl overflow-hidden border-border/60">
+        <Card className="glass-card rounded-2xl overflow-hidden border-border/60">
           <CardHeader className="flex flex-row items-center gap-4 pb-2 border-b border-border/40">
-            <div className="bg-primary/20 p-3 rounded-2xl text-primary border border-primary/30">
-              <User className="h-6 w-6" />
+            <div className="bg-primary/10 p-3 rounded-xl text-primary border border-primary/20">
+              <UserIcon className="h-6 w-6" />
             </div>
-            <CardTitle className="text-xl font-extrabold">Profile Overview</CardTitle>
+            <CardTitle className="text-xl font-semibold">Profile Overview</CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -130,25 +137,25 @@ export default function SettingsPage() {
         </Card>
 
         {/* Study Preferences */}
-        <Card className="glass-card rounded-3xl overflow-hidden border-border/60">
+        <Card className="glass-card rounded-2xl overflow-hidden border-border/60">
           <CardHeader className="flex flex-row items-center gap-4 pb-2 border-b border-border/40">
-            <div className="bg-accent/20 p-3 rounded-2xl text-accent border border-accent/30">
-              <Target className="h-6 w-6" />
+            <div className="bg-accent/10 p-3 rounded-xl text-accent border border-accent/20">
+              <FlagIcon className="h-6 w-6" />
             </div>
-            <CardTitle className="text-xl font-extrabold">Study Preferences</CardTitle>
+            <CardTitle className="text-xl font-semibold">Study Preferences</CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-6">
             {/* JLPT Target Level */}
             <div className="space-y-3">
-              <label className="text-sm font-bold text-foreground">Target JLPT Level</label>
+              <label className="text-sm font-semibold text-foreground">Target JLPT Level</label>
               <div className="flex flex-wrap gap-2">
                 {JLPT_LEVELS.map((level) => (
                   <button
                     key={level.value}
                     onClick={() => setCurrentLevel(level.value)}
-                    className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all duration-200 ${
+                    className={`px-5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 ${
                       displayLevel === level.value
-                        ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105'
+                        ? 'bg-primary text-primary-foreground shadow-md scale-105'
                         : 'bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary'
                     }`}
                   >
@@ -160,8 +167,8 @@ export default function SettingsPage() {
 
             {/* Daily Goal */}
             <div className="space-y-3">
-              <label className="text-sm font-bold text-foreground flex items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
+              <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <ClockIcon className="h-4 w-4 text-muted-foreground" />
                 Daily Study Goal
               </label>
               <div className="flex flex-wrap gap-2">
@@ -169,9 +176,9 @@ export default function SettingsPage() {
                   <button
                     key={goal}
                     onClick={() => setDailyGoal(goal)}
-                    className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all duration-200 ${
+                    className={`px-5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 ${
                       displayGoal === goal
-                        ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105'
+                        ? 'bg-primary text-primary-foreground shadow-md scale-105'
                         : 'bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary'
                     }`}
                   >
@@ -184,17 +191,16 @@ export default function SettingsPage() {
             {/* Save Button */}
             <div className="flex items-center gap-4 pt-4 border-t border-border/50">
               <Button
-                variant="premium"
                 onClick={handleSave}
                 disabled={!hasChanges || updateMutation.isPending}
-                className="gap-2 rounded-2xl font-bold shadow-md px-6"
+                className="gap-2 rounded-xl font-semibold shadow-md px-6 bg-primary hover:bg-primary/90 text-white"
               >
                 {updateMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <ArrowPathIcon className="h-4 w-4 animate-spin" />
                 ) : saved ? (
-                  <Check className="h-4 w-4" />
+                  <CheckIcon className="h-4 w-4" />
                 ) : (
-                  <Settings className="h-4 w-4" />
+                  <Cog6ToothIcon className="h-4 w-4" />
                 )}
                 {saved ? 'Saved!' : 'Save Changes'}
               </Button>
@@ -206,18 +212,18 @@ export default function SettingsPage() {
         </Card>
 
         {/* Security */}
-        <Card className="glass-card rounded-3xl overflow-hidden border-border/60">
+        <Card className="glass-card rounded-2xl overflow-hidden border-border/60">
           <CardHeader className="flex flex-row items-center gap-4 pb-2 border-b border-border/40">
-            <div className="bg-fuji-ice/20 p-3 rounded-2xl text-fuji-ice border border-fuji-ice/30">
-              <Shield className="h-6 w-6" />
+            <div className="bg-blue-50 p-3 rounded-xl text-blue-500 border border-blue-100">
+              <ShieldCheckIcon className="h-6 w-6" />
             </div>
-            <CardTitle className="text-xl font-extrabold">Security</CardTitle>
+            <CardTitle className="text-xl font-semibold">Security</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             <p className="text-muted-foreground text-sm mb-4">
               Password change and account deletion features are protected via HttpOnly session security.
             </p>
-            <Button variant="outline" disabled className="opacity-50 rounded-xl font-bold">
+            <Button variant="outline" disabled className="opacity-50 rounded-xl font-semibold">
               Change Password (Protected)
             </Button>
           </CardContent>

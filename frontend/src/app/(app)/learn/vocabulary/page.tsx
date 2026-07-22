@@ -7,7 +7,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { speakJapanese } from '@/lib/tts';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, Volume2 } from 'lucide-react';
+import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, ArrowPathIcon, SpeakerWaveIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { GSAPReveal } from '@/components/ui/GSAPReveal';
 
@@ -97,32 +97,32 @@ export default function VocabularyExplorer() {
   const endItem = startItem + words.length - 1;
 
   return (
-    <GSAPReveal className="space-y-8 max-w-6xl mx-auto pb-12">
+    <GSAPReveal className="space-y-8 max-w-7xl mx-auto pb-16">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Link href="/learn">
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <ArrowLeft className="h-5 w-5" />
+            <Button variant="ghost" size="icon" className="rounded-2xl hover:bg-secondary">
+              <ArrowLeftIcon className="h-5 w-5" />
             </Button>
           </Link>
           <div>
             <h1 className="h1-premium text-3xl sm:text-4xl">Vocabulary Explorer</h1>
-            <p className="text-muted-foreground text-sm sm:text-base">Browse 6,900+ Japanese words across the JLPT spectrum with page navigation.</p>
+            <p className="text-muted-foreground text-sm sm:text-base font-medium">Browse 6,900+ Japanese words across the JLPT spectrum.</p>
           </div>
         </div>
       </div>
 
       {/* Level Selector & Info Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex gap-2 p-1.5 bg-secondary/60 backdrop-blur-md rounded-2xl w-fit border border-border/50 shadow-inner">
+        <div className="flex gap-2 p-1.5 bg-card/80 backdrop-blur-2xl rounded-2xl border border-border/60 shadow-lg">
           {LEVELS.map((l) => (
             <button
               key={l}
               onClick={() => handleLevelChange(l)}
-              className={`px-6 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold uppercase transition-all duration-200 ${
+              className={`px-6 py-2.5 rounded-xl text-xs sm:text-sm font-black uppercase transition-all duration-300 ${
                 level === l 
-                  ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105' 
+                  ? 'bg-gradient-to-r from-primary to-tokyo-gold text-white shadow-lg shadow-primary/25 scale-105' 
                   : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
               }`}
             >
@@ -133,7 +133,8 @@ export default function VocabularyExplorer() {
 
         {/* Page status pill */}
         {!isLoading && !isError && words.length > 0 && (
-          <div className="text-sm font-semibold text-muted-foreground bg-card/80 backdrop-blur-md px-4 py-2 rounded-xl border border-border/60 shadow-sm">
+          <div className="text-xs sm:text-sm font-extrabold text-muted-foreground bg-card/80 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-border/60 shadow-sm flex items-center gap-2">
+            
             Showing <span className="text-primary font-black">{startItem}–{endItem}</span> words (Page {pageNumber})
           </div>
         )}
@@ -141,57 +142,56 @@ export default function VocabularyExplorer() {
 
       {/* Content Grid */}
       {isLoading || isFetching ? (
-        <div className="flex justify-center p-16">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex justify-center p-20">
+          <ArrowPathIcon className="h-10 w-10 animate-spin text-primary" />
         </div>
       ) : isError ? (
-        <div className="text-center text-destructive p-8 bg-destructive/10 rounded-2xl border border-destructive/20">
-          <p className="font-medium">Failed to load vocabulary.</p>
+        <div className="text-center text-destructive p-10 bg-destructive/10 rounded-3xl border border-destructive/20">
+          <p className="font-bold text-lg">Failed to load vocabulary.</p>
           <p className="text-sm text-muted-foreground mt-1">
             {error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.'}
           </p>
         </div>
       ) : (
         <>
-          <GSAPReveal key={`${level}-${pageNumber}`} staggerChildren delay={0.05} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <GSAPReveal key={`${level}-${pageNumber}`} staggerChildren delay={0.05} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {words.map((word) => (
-              <Card key={word.id} className="glass-card hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 rounded-2xl overflow-hidden group">
+              <Card key={word.id} className="enterprise-card rounded-3xl group">
                 <CardContent className="p-6 space-y-4">
                   <div className="flex justify-between items-start">
-                    <div className="space-y-1">
-                      <p className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-lg w-fit uppercase tracking-wider">
-                        {word.part_of_speech}
-                      </p>
-                    </div>
+                    <span className="text-[11px] font-black text-primary bg-primary/10 px-3 py-1 rounded-xl uppercase tracking-widest border border-primary/20">
+                      {word.part_of_speech}
+                    </span>
+                    
                     <Button 
                       variant="ghost" 
                       size="icon" 
                       onClick={() => speakJapanese(word.kanji || word.kana)}
                       title="Listen Pronunciation"
-                      className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors"
+                      className="h-9 w-9 text-muted-foreground hover:text-primary hover:bg-primary/15 rounded-full transition-all shadow-sm"
                     >
-                      <Volume2 className="h-4 w-4" />
+                      <SpeakerWaveIcon className="h-4 w-4" />
                     </Button>
                   </div>
                   
-                  <div className="text-center py-3">
-                    <h2 className="text-4xl font-black mb-1.5 tracking-wide text-foreground group-hover:scale-105 transition-transform duration-300">
+                  <div className="text-center py-4 space-y-1">
+                    <h2 className="text-4xl font-black tracking-tight text-foreground transition-transform duration-300">
                       {word.kanji || word.kana}
                     </h2>
                     {word.kanji && (
-                      <p className="text-base text-muted-foreground font-semibold">
+                      <p className="text-base text-primary font-bold">
                         {word.kana}
                       </p>
                     )}
                     {word.romaji && (
-                      <p className="text-xs text-muted-foreground/70 italic mt-1 font-mono">
+                      <p className="text-xs text-muted-foreground/80 italic font-mono">
                         {word.romaji}
                       </p>
                     )}
                   </div>
                   
                   <div className="border-t border-border/50 pt-3 text-center">
-                    <p className="text-foreground/90 font-bold text-sm">
+                    <p className="text-foreground font-extrabold text-sm leading-snug">
                       {word.meaning}
                     </p>
                   </div>
@@ -206,15 +206,15 @@ export default function VocabularyExplorer() {
               variant="outline"
               onClick={handlePrevPage}
               disabled={pageNumber <= 1 || isFetching}
-              className="gap-2 rounded-xl font-bold"
+              className="gap-2 rounded-2xl font-bold px-6 py-5 shadow-sm"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeftIcon className="h-4 w-4" />
               Previous
             </Button>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-muted-foreground">
-                Page <span className="text-primary font-black">{pageNumber}</span>
+              <span className="text-sm font-bold text-muted-foreground">
+                Page <span className="text-primary font-black text-lg">{pageNumber}</span>
               </span>
             </div>
 
@@ -222,10 +222,10 @@ export default function VocabularyExplorer() {
               variant="outline"
               onClick={handleNextPage}
               disabled={!data?.next || isFetching}
-              className="gap-2 rounded-xl font-bold"
+              className="gap-2 rounded-2xl font-bold px-6 py-5 shadow-sm"
             >
               Next
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRightIcon className="h-4 w-4" />
             </Button>
           </div>
         </>
